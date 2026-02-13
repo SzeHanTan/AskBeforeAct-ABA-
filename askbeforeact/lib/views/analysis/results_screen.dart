@@ -1,14 +1,26 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../../models/analysis_model.dart';
+import '../../services/image_generation_service.dart';
 
 /// Screen displaying fraud analysis results
-class ResultsScreen extends StatelessWidget {
+class ResultsScreen extends StatefulWidget {
   final AnalysisModel analysis;
 
   const ResultsScreen({
     Key? key,
     required this.analysis,
   }) : super(key: key);
+
+  @override
+  State<ResultsScreen> createState() => _ResultsScreenState();
+}
+
+class _ResultsScreenState extends State<ResultsScreen> {
+  final ImageGenerationService _imageService = ImageGenerationService();
+  Map<String, dynamic>? _generatedImage;
+  bool _isGeneratingImage = false;
+  String _selectedImageType = 'warning'; // 'warning', 'meme', 'social'
 
   @override
   Widget build(BuildContext context) {
@@ -43,19 +55,24 @@ class ResultsScreen extends StatelessWidget {
                   
                   const SizedBox(height: 24),
                   
+                  // AI-Generated Image Card
+                  _buildImageGenerationCard(),
+                  
+                  const SizedBox(height: 24),
+                  
                   // Scam Type Card
                   _buildScamTypeCard(),
                   
                   const SizedBox(height: 24),
                   
                   // Red Flags Card
-                  if (analysis.redFlags.isNotEmpty) ...[
+                  if (widget.analysis.redFlags.isNotEmpty) ...[
                     _buildRedFlagsCard(),
                     const SizedBox(height: 24),
                   ],
                   
                   // Recommendations Card
-                  if (analysis.recommendations.isNotEmpty) ...[
+                  if (widget.analysis.recommendations.isNotEmpty) ...[
                     _buildRecommendationsCard(),
                     const SizedBox(height: 24),
                   ],
@@ -72,11 +89,329 @@ class ResultsScreen extends StatelessWidget {
       ),
     );
   }
+  
+  /// Build AI Image Generation Card
+  Widget _buildImageGenerationCard() {
+    return Container(
+      padding: const EdgeInsets.all(28),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 24,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF0F9FF),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.image_outlined,
+                  size: 28,
+                  color: Color(0xFF3B82F6),
+                ),
+              ),
+              const SizedBox(width: 16),
+              const Text(
+                'AI-Generated Warning',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF1E293B),
+                ),
+              ),
+            ],
+          ),
+          
+          const SizedBox(height: 20),
+          
+          // Image type selector
+          Row(
+            children: [
+              _buildImageTypeButton('Warning Image', 'warning', Icons.warning_amber),
+              const SizedBox(width: 12),
+              _buildImageTypeButton('Meme', 'meme', Icons.emoji_emotions),
+              const SizedBox(width: 12),
+              _buildImageTypeButton('Social Card', 'social', Icons.share),
+            ],
+          ),
+          
+          const SizedBox(height: 20),
+          
+          // Generated image or placeholder
+          if (_generatedImage != null)
+            _buildGeneratedImage()
+          else if (_isGeneratingImage)
+            _buildLoadingPlaceholder()
+          else
+            _buildGeneratePlaceholder(),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildImageTypeButton(String label, String type, IconData icon) {
+    final isSelected = _selectedImageType == type;
+    return Expanded(
+      child: ElevatedButton.icon(
+        onPressed: () {
+          setState(() {
+            _selectedImageType = type;
+            _generatedImage = null;
+          });
+        },
+        icon: Icon(icon, size: 18),
+        label: Text(label, style: const TextStyle(fontSize: 13)),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: isSelected ? const Color(0xFF3B82F6) : Colors.white,
+          foregroundColor: isSelected ? Colors.white : const Color(0xFF64748B),
+          elevation: 0,
+          side: BorderSide(
+            color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFFE2E8F0),
+            width: 2,
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildGeneratePlaceholder() {
+    return Container(
+      height: 300,
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: const Color(0xFFE2E8F0),
+          width: 2,
+        ),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.auto_awesome,
+            size: 64,
+            color: const Color(0xFF3B82F6).withOpacity(0.5),
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'Generate AI-Powered Visual',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF1E293B),
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Create a shareable warning image',
+            style: TextStyle(
+              fontSize: 15,
+              color: Color(0xFF64748B),
+            ),
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton.icon(
+            onPressed: _generateImage,
+            icon: const Icon(Icons.auto_awesome, size: 20),
+            label: const Text(
+              'Generate Now',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF3B82F6),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              elevation: 0,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildLoadingPlaceholder() {
+    return Container(
+      height: 300,
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: const Color(0xFFE2E8F0),
+          width: 2,
+        ),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: const [
+          SizedBox(
+            width: 64,
+            height: 64,
+            child: CircularProgressIndicator(
+              strokeWidth: 4,
+              color: Color(0xFF3B82F6),
+            ),
+          ),
+          SizedBox(height: 24),
+          Text(
+            'Creating your AI image...',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF1E293B),
+            ),
+          ),
+          SizedBox(height: 8),
+          Text(
+            'This may take 5-10 seconds',
+            style: TextStyle(
+              fontSize: 15,
+              color: Color(0xFF64748B),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildGeneratedImage() {
+    try {
+      final imageData = _generatedImage!['data'] as String;
+      final imageBytes = base64Decode(imageData);
+      
+      return Column(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Image.memory(
+              imageBytes,
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  height: 300,
+                  color: Colors.red.shade50,
+                  child: const Center(
+                    child: Text('Failed to load image'),
+                  ),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: _generateImage,
+                  icon: const Icon(Icons.refresh, size: 20),
+                  label: const Text('Regenerate'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFF3B82F6),
+                    side: const BorderSide(color: Color(0xFF3B82F6), width: 2),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    // TODO: Implement download/share
+                  },
+                  icon: const Icon(Icons.download, size: 20),
+                  label: const Text('Download'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF3B82F6),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      );
+    } catch (e) {
+      return Container(
+        height: 300,
+        color: Colors.red.shade50,
+        child: Center(
+          child: Text('Error displaying image: $e'),
+        ),
+      );
+    }
+  }
+  
+  Future<void> _generateImage() async {
+    setState(() {
+      _isGeneratingImage = true;
+      _generatedImage = null;
+    });
+    
+    try {
+      Map<String, dynamic>? result;
+      
+      switch (_selectedImageType) {
+        case 'warning':
+          result = await _imageService.generateWarningImage(widget.analysis);
+          break;
+        case 'meme':
+          result = await _imageService.generateEducationalMeme(widget.analysis);
+          break;
+        case 'social':
+          result = await _imageService.generateSocialCard(widget.analysis);
+          break;
+      }
+      
+      setState(() {
+        _generatedImage = result;
+        _isGeneratingImage = false;
+      });
+      
+      if (result == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to generate image. Please try again.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      setState(() {
+        _isGeneratingImage = false;
+      });
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
 
   Widget _buildRiskScoreCard() {
-    final riskLevel = _getRiskLevel(analysis.riskScore);
-    final riskColor = _getRiskColor(analysis.riskScore);
-    final riskIcon = _getRiskIcon(analysis.riskScore);
+    final riskLevel = _getRiskLevel(widget.analysis.riskScore);
+    final riskColor = _getRiskColor(widget.analysis.riskScore);
+    final riskIcon = _getRiskIcon(widget.analysis.riskScore);
     
     return Container(
       padding: const EdgeInsets.all(32),
@@ -125,7 +460,7 @@ class ResultsScreen extends StatelessWidget {
           
           // Risk Score
           Text(
-            'Risk Score: ${analysis.riskScore}%',
+            'Risk Score: ${widget.analysis.riskScore}%',
             style: const TextStyle(
               fontSize: 20,
               color: Color(0xFF64748B),
@@ -139,7 +474,7 @@ class ResultsScreen extends StatelessWidget {
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
             child: LinearProgressIndicator(
-              value: analysis.riskScore / 100,
+              value: widget.analysis.riskScore / 100,
               backgroundColor: const Color(0xFFE2E8F0),
               valueColor: AlwaysStoppedAnimation<Color>(riskColor),
               minHeight: 16,
@@ -159,7 +494,7 @@ class ResultsScreen extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                'Confidence: ${_formatConfidence(analysis.confidence)}',
+                'Confidence: ${_formatConfidence(widget.analysis.confidence)}',
                 style: const TextStyle(
                   fontSize: 16,
                   color: Color(0xFF64748B),
@@ -195,7 +530,7 @@ class ResultsScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
-              _getScamTypeIcon(analysis.scamType),
+              _getScamTypeIcon(widget.analysis.scamType),
               size: 32,
               color: const Color(0xFF3B82F6),
             ),
@@ -215,7 +550,7 @@ class ResultsScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  _formatScamType(analysis.scamType),
+                  _formatScamType(widget.analysis.scamType),
                   style: const TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.w600,
@@ -275,7 +610,7 @@ class ResultsScreen extends StatelessWidget {
           
           const SizedBox(height: 24),
           
-          ...analysis.redFlags.asMap().entries.map((entry) {
+          ...widget.analysis.redFlags.asMap().entries.map((entry) {
             return Padding(
               padding: const EdgeInsets.only(bottom: 16),
               child: Row(
@@ -355,7 +690,7 @@ class ResultsScreen extends StatelessWidget {
           
           const SizedBox(height: 24),
           
-          ...analysis.recommendations.asMap().entries.map((entry) {
+          ...widget.analysis.recommendations.asMap().entries.map((entry) {
             return Padding(
               padding: const EdgeInsets.only(bottom: 20),
               child: Row(
