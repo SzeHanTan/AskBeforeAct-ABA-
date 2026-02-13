@@ -2,6 +2,8 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import '../../core/constants/app_colors.dart';
+import '../../services/gemini_service.dart';
+import 'results_screen.dart';
 
 /// Main analysis screen for fraud detection
 class AnalyzeScreen extends StatefulWidget {
@@ -15,6 +17,7 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> with SingleTickerProvider
   late TabController _tabController;
   final TextEditingController _textController = TextEditingController();
   final TextEditingController _urlController = TextEditingController();
+  final GeminiService _geminiService = GeminiService();
   
   Uint8List? _selectedImageBytes;
   bool _isAnalyzing = false;
@@ -23,6 +26,30 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> with SingleTickerProvider
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    
+    // Add listeners to update button state when text changes
+    _textController.addListener(() {
+      setState(() {});
+    });
+    _urlController.addListener(() {
+      setState(() {});
+    });
+    
+    // List available models for debugging
+    _listAvailableModels();
+  }
+  
+  Future<void> _listAvailableModels() async {
+    try {
+      final models = await _geminiService.listAvailableModels();
+      print('=== AVAILABLE GEMINI MODELS ===');
+      for (var model in models) {
+        print('  - $model');
+      }
+      print('================================');
+    } catch (e) {
+      print('Failed to list models: $e');
+    }
   }
 
   @override
@@ -52,18 +79,92 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> with SingleTickerProvider
     }
   }
 
-  void _analyzeContent() {
+  Future<void> _analyzeContent() async {
     setState(() {
       _isAnalyzing = true;
     });
 
-    // TODO: Implement actual analysis logic
-    Future.delayed(const Duration(seconds: 2), () {
+    try {
+      Map<String, dynamic> geminiResponse;
+      String contentType;
+      String content;
+
+      // Determine which tab is active and analyze accordingly
+      switch (_tabController.index) {
+        case 0: // Screenshot
+          if (_selectedImageBytes == null) {
+            _showErrorSnackBar('Please select an image first');
+            setState(() {
+              _isAnalyzing = false;
+            });
+            return;
+          }
+          geminiResponse = await _geminiService.analyzeImage(_selectedImageBytes!);
+          contentType = 'screenshot';
+          content = 'Image analysis - ${DateTime.now().toIso8601String()}';
+          break;
+
+        case 1: // Text
+          if (_textController.text.trim().isEmpty) {
+            _showErrorSnackBar('Please enter some text to analyze');
+            setState(() {
+              _isAnalyzing = false;
+            });
+            return;
+          }
+          geminiResponse = await _geminiService.analyzeText(_textController.text.trim());
+          contentType = 'text';
+          content = _textController.text.trim();
+          break;
+
+        case 2: // URL
+          if (_urlController.text.trim().isEmpty) {
+            _showErrorSnackBar('Please enter a URL to check');
+            setState(() {
+              _isAnalyzing = false;
+            });
+            return;
+          }
+          geminiResponse = await _geminiService.analyzeUrl(_urlController.text.trim());
+          contentType = 'url';
+          content = _urlController.text.trim();
+          break;
+
+        default:
+          _showErrorSnackBar('Invalid tab selection');
+          setState(() {
+            _isAnalyzing = false;
+          });
+          return;
+      }
+
+      // Create analysis model
+      final analysisModel = _geminiService.createAnalysisModel(
+        userId: 'current_user_id', // TODO: Get from auth service
+        type: contentType,
+        content: content,
+        geminiResponse: geminiResponse,
+      );
+
       setState(() {
         _isAnalyzing = false;
       });
-      _showSuccessSnackBar('Analysis completed!');
-    });
+
+      // Navigate to results screen
+      if (mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ResultsScreen(analysis: analysisModel),
+          ),
+        );
+      }
+    } catch (e) {
+      setState(() {
+        _isAnalyzing = false;
+      });
+      _showErrorSnackBar('Analysis failed: ${e.toString()}');
+    }
   }
 
   void _showErrorSnackBar(String message) {
@@ -71,18 +172,6 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> with SingleTickerProvider
       SnackBar(
         content: Text(message, style: const TextStyle(fontSize: 16)),
         backgroundColor: AppColors.error,
-        behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.all(16),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      ),
-    );
-  }
-
-  void _showSuccessSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message, style: const TextStyle(fontSize: 16)),
-        backgroundColor: AppColors.success,
         behavior: SnackBarBehavior.floating,
         margin: const EdgeInsets.all(16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
