@@ -1,0 +1,14 @@
+# Flutter SDK (don't commit the SDK itself)
+flutter/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
