@@ -7,7 +7,7 @@ import 'results_screen.dart';
 
 /// Main analysis screen for fraud detection
 class AnalyzeScreen extends StatefulWidget {
-  const AnalyzeScreen({Key? key}) : super(key: key);
+  const AnalyzeScreen({super.key});
 
   @override
   State<AnalyzeScreen> createState() => _AnalyzeScreenState();

@@ -416,7 +416,7 @@ Make it personal to THIS specific scam attempt.
       return 'Guaranteed 500% returns!';
     } else {
       // Extract first 40 chars of the red flag as quote
-      String quote = redFlag.length > 40 ? redFlag.substring(0, 40) + '...' : redFlag;
+      String quote = redFlag.length > 40 ? '${redFlag.substring(0, 40)}...' : redFlag;
       return quote;
     }
   }

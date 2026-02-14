@@ -8,9 +8,9 @@ class ResultsScreen extends StatefulWidget {
   final AnalysisModel analysis;
 
   const ResultsScreen({
-    Key? key,
+    super.key,
     required this.analysis,
-  }) : super(key: key);
+  });
 
   @override
   State<ResultsScreen> createState() => _ResultsScreenState();
@@ -639,7 +639,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
                 ],
               ),
             );
-          }).toList(),
+          }),
         ],
       ),
     );
@@ -729,7 +729,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
                 ],
               ),
             );
-          }).toList(),
+          }),
         ],
       ),
     );

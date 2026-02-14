@@ -11,7 +11,7 @@ void main() {
 }
 
 class AskBeforeActApp extends StatelessWidget {
-  const AskBeforeActApp({Key? key}) : super(key: key);
+  const AskBeforeActApp({super.key});
 
   @override
   Widget build(BuildContext context) {

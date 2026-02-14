@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 /// Education hub screen
 class EducationScreen extends StatelessWidget {
-  const EducationScreen({Key? key}) : super(key: key);
+  const EducationScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

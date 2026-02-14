@@ -1,0 +1,79 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+    
+    function isValidUser(data) {
+      return data.keys().hasAll(['id', 'email', 'displayName', 'createdAt', 'analysisCount', 'isAnonymous'])
+        && data.id is string
+        && data.email is string
+        && data.displayName is string
+        && data.createdAt is timestamp
+        && data.analysisCount is int
+        && data.isAnonymous is bool;
+    }
+    
+    function isValidAnalysis(data) {
+      return data.keys().hasAll(['userId', 'type', 'content', 'riskScore', 'riskLevel', 'scamType', 'redFlags', 'recommendations', 'confidence', 'createdAt'])
+        && data.userId is string
+        && data.type in ['screenshot', 'text', 'url']
+        && data.riskScore is int
+        && data.riskScore >= 0
+        && data.riskScore <= 100
+        && data.riskLevel in ['low', 'medium', 'high']
+        && data.redFlags is list
+        && data.recommendations is list;
+    }
+    
+    function isValidPost(data) {
+      return data.keys().hasAll(['userId', 'userName', 'isAnonymous', 'scamType', 'content', 'createdAt'])
+        && data.content is string
+        && data.content.size() <= 500
+        && data.scamType in ['phishing', 'romance', 'payment', 'job', 'tech_support', 'other'];
+    }
+    
+    // Users collection
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() 
+        && request.auth.uid == userId
+        && isValidUser(request.resource.data);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
+    }
+    
+    // Analyses collection
+    match /analyses/{analysisId} {
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() 
+        && request.resource.data.userId == request.auth.uid
+        && isValidAnalysis(request.resource.data);
+      allow update: if isOwner(resource.data.userId);
+      allow delete: if isOwner(resource.data.userId);
+    }
+    
+    // Community posts
+    match /communityPosts/{postId} {
+      allow read: if true; // Public read
+      allow create: if isSignedIn() 
+        && request.resource.data.userId == request.auth.uid
+        && isValidPost(request.resource.data);
+      allow update: if isSignedIn(); // For voting
+      allow delete: if isOwner(resource.data.userId);
+    }
+    
+    // Education content (read-only)
+    match /educationContent/{docId} {
+      allow read: if true;
+      allow write: if false; // Admin only via console
+    }
+  }
+}

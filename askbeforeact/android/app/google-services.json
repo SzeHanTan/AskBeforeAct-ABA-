@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "282557061599",
+    "project_id": "askbeforeact-f5326",
+    "storage_bucket": "askbeforeact-f5326.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:282557061599:android:0429c9d15f55a1d7ea0c6a",
+        "android_client_info": {
+          "package_name": "com.example.askbeforeact"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "282557061599-gkns0o061d6br8g0nr7hvgp4geja3q7k.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCYSbdKPY8i1AMavO9JYWmyuPYoeIZ1Sts"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "282557061599-gkns0o061d6br8g0nr7hvgp4geja3q7k.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
