@@ -1,8 +1,11 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
-import '../../services/gemini_service.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/analysis_provider.dart';
+import '../auth/login_screen.dart';
 import 'results_screen.dart';
 
 /// Main analysis screen for fraud detection
@@ -17,7 +20,6 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> with SingleTickerProvider
   late TabController _tabController;
   final TextEditingController _textController = TextEditingController();
   final TextEditingController _urlController = TextEditingController();
-  final GeminiService _geminiService = GeminiService();
   
   Uint8List? _selectedImageBytes;
   bool _isAnalyzing = false;
@@ -34,22 +36,6 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> with SingleTickerProvider
     _urlController.addListener(() {
       setState(() {});
     });
-    
-    // List available models for debugging
-    _listAvailableModels();
-  }
-  
-  Future<void> _listAvailableModels() async {
-    try {
-      final models = await _geminiService.listAvailableModels();
-      print('=== AVAILABLE GEMINI MODELS ===');
-      for (var model in models) {
-        print('  - $model');
-      }
-      print('================================');
-    } catch (e) {
-      print('Failed to list models: $e');
-    }
   }
 
   @override
@@ -80,15 +66,82 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> with SingleTickerProvider
   }
 
   Future<void> _analyzeContent() async {
+    final authProvider = context.read<AuthProvider>();
+    final analysisProvider = context.read<AnalysisProvider>();
+
+    // Check if user is authenticated
+    if (!authProvider.isAuthenticated) {
+      final shouldLogin = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Sign In Required'),
+          content: const Text(
+            'You need to sign in to analyze content. Would you like to sign in now?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Sign In'),
+            ),
+          ],
+        ),
+      );
+
+      if (shouldLogin == true && mounted) {
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const LoginScreen()),
+        );
+      }
+      return;
+    }
+
+    // Check if anonymous user has reached limit
+    if (authProvider.isAnonymous) {
+      final hasReachedLimit = await analysisProvider.hasAnonymousUserReachedLimit(
+        authProvider.userId!,
+      );
+
+      if (hasReachedLimit) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Limit Reached'),
+            content: const Text(
+              'You have reached the limit of 3 analyses for anonymous users. '
+              'Please create an account to continue.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const LoginScreen()),
+                  );
+                },
+                child: const Text('Create Account'),
+              ),
+            ],
+          ),
+        );
+        return;
+      }
+    }
+
     setState(() {
       _isAnalyzing = true;
     });
 
     try {
-      Map<String, dynamic> geminiResponse;
-      String contentType;
-      String content;
-
+      final userId = authProvider.userId!;
+      
       // Determine which tab is active and analyze accordingly
       switch (_tabController.index) {
         case 0: // Screenshot
@@ -99,9 +152,24 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> with SingleTickerProvider
             });
             return;
           }
-          geminiResponse = await _geminiService.analyzeImage(_selectedImageBytes!);
-          contentType = 'screenshot';
-          content = 'Image analysis - ${DateTime.now().toIso8601String()}';
+          
+          final analysis = await analysisProvider.analyzeScreenshot(
+            userId: userId,
+            imageBytes: _selectedImageBytes!,
+          );
+
+          if (analysis != null && mounted) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ResultsScreen(analysis: analysis),
+              ),
+            );
+          } else if (mounted) {
+            _showErrorSnackBar(
+              analysisProvider.error ?? 'Failed to analyze screenshot',
+            );
+          }
           break;
 
         case 1: // Text
@@ -112,9 +180,24 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> with SingleTickerProvider
             });
             return;
           }
-          geminiResponse = await _geminiService.analyzeText(_textController.text.trim());
-          contentType = 'text';
-          content = _textController.text.trim();
+          
+          final analysis = await analysisProvider.analyzeText(
+            userId: userId,
+            text: _textController.text.trim(),
+          );
+
+          if (analysis != null && mounted) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ResultsScreen(analysis: analysis),
+              ),
+            );
+          } else if (mounted) {
+            _showErrorSnackBar(
+              analysisProvider.error ?? 'Failed to analyze text',
+            );
+          }
           break;
 
         case 2: // URL
@@ -125,40 +208,30 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> with SingleTickerProvider
             });
             return;
           }
-          geminiResponse = await _geminiService.analyzeUrl(_urlController.text.trim());
-          contentType = 'url';
-          content = _urlController.text.trim();
+          
+          final analysis = await analysisProvider.analyzeUrl(
+            userId: userId,
+            url: _urlController.text.trim(),
+          );
+
+          if (analysis != null && mounted) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ResultsScreen(analysis: analysis),
+              ),
+            );
+          } else if (mounted) {
+            _showErrorSnackBar(
+              analysisProvider.error ?? 'Failed to analyze URL',
+            );
+          }
           break;
-
-        default:
-          _showErrorSnackBar('Invalid tab selection');
-          setState(() {
-            _isAnalyzing = false;
-          });
-          return;
       }
-
-      // Create analysis model
-      final analysisModel = _geminiService.createAnalysisModel(
-        userId: 'current_user_id', // TODO: Get from auth service
-        type: contentType,
-        content: content,
-        geminiResponse: geminiResponse,
-      );
 
       setState(() {
         _isAnalyzing = false;
       });
-
-      // Navigate to results screen
-      if (mounted) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ResultsScreen(analysis: analysisModel),
-          ),
-        );
-      }
     } catch (e) {
       setState(() {
         _isAnalyzing = false;
