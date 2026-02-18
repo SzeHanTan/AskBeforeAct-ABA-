@@ -2,10 +2,12 @@ import 'package:flutter/foundation.dart';
 import '../models/community_post_model.dart';
 import '../models/podcast_model.dart';
 import '../repositories/community_repository.dart';
+import '../services/audio_generation_service.dart';
 
 /// Community state provider
 class CommunityProvider extends ChangeNotifier {
   final CommunityRepository _communityRepository;
+  final AudioGenerationService _audioService = AudioGenerationService();
 
   CommunityProvider({required CommunityRepository communityRepository})
       : _communityRepository = communityRepository;
@@ -24,6 +26,10 @@ class CommunityProvider extends ChangeNotifier {
   bool _isGeneratingPodcast = false;
   String? _podcastError;
   String _selectedDateRange = 'today'; // today, 3days, week, month
+  
+  // Audio generation state
+  bool _isGeneratingAudio = false;
+  String? _audioError;
 
   // Getters
   List<CommunityPostModel> get posts => _posts;
@@ -39,6 +45,10 @@ class CommunityProvider extends ChangeNotifier {
   bool get isGeneratingPodcast => _isGeneratingPodcast;
   String? get podcastError => _podcastError;
   String get selectedDateRange => _selectedDateRange;
+  
+  // Audio getters
+  bool get isGeneratingAudio => _isGeneratingAudio;
+  String? get audioError => _audioError;
 
   /// Load community posts
   Future<void> loadPosts({String? scamType, int limit = 50}) async {
@@ -456,5 +466,57 @@ class CommunityProvider extends ChangeNotifier {
     if (_selectedDateRange != dateRange) {
       generatePodcastWithDateRange(dateRange);
     }
+  }
+
+  /// Generate audio for current podcast
+  Future<void> generatePodcastAudio({
+    String voiceName = 'Puck',
+    String tone = 'casual',
+  }) async {
+    if (_todaysPodcast == null) {
+      _audioError = 'No podcast available to generate audio';
+      notifyListeners();
+      return;
+    }
+
+    try {
+      _isGeneratingAudio = true;
+      _audioError = null;
+      notifyListeners();
+
+      print('🎙️ Starting audio generation...');
+      print('📝 Script length: ${_todaysPodcast!.script.length} characters');
+      print('🎤 Voice: $voiceName');
+      print('🎨 Tone: $tone');
+
+      // Generate audio using Gemini TTS
+      final audioData = await _audioService.generatePodcastAudio(
+        script: _todaysPodcast!.script,
+        voiceName: voiceName,
+        tone: tone,
+      );
+
+      // Update podcast with audio data
+      _todaysPodcast = _todaysPodcast!.copyWith(audioData: audioData);
+
+      _isGeneratingAudio = false;
+      notifyListeners();
+
+      print('✅ Audio generation complete!');
+      print('📊 Audio data size: ${audioData.length} bytes');
+      print('📊 Podcast has audio: ${_todaysPodcast!.audioData != null}');
+      print('📊 Audio data length: ${_todaysPodcast!.audioData?.length ?? 0}');
+    } catch (e) {
+      _audioError = e.toString().replaceAll('Exception: ', '');
+      _isGeneratingAudio = false;
+      notifyListeners();
+      print('❌ Audio generation failed: $e');
+    }
+  }
+
+  /// Clear audio error
+  void clearAudioError() {
+    _audioError = null;
+    notifyListeners();
   }
 }

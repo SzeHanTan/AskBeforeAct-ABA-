@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 /// Daily podcast summary model
@@ -12,6 +13,8 @@ class PodcastModel {
   final String duration; // Estimated duration (e.g., "2 minutes")
   final DateTime createdAt;
   final bool isGenerated; // Whether the podcast has been generated
+  final Uint8List? audioData; // Generated audio data (not stored in Firestore)
+  final String? audioUrl; // URL to audio file if stored in Firebase Storage
 
   PodcastModel({
     required this.id,
@@ -24,6 +27,8 @@ class PodcastModel {
     required this.duration,
     required this.createdAt,
     this.isGenerated = true,
+    this.audioData,
+    this.audioUrl,
   });
 
   /// Create from Firestore document
@@ -69,6 +74,8 @@ class PodcastModel {
     String? duration,
     DateTime? createdAt,
     bool? isGenerated,
+    Uint8List? audioData,
+    String? audioUrl,
   }) {
     return PodcastModel(
       id: id ?? this.id,
@@ -81,6 +88,8 @@ class PodcastModel {
       duration: duration ?? this.duration,
       createdAt: createdAt ?? this.createdAt,
       isGenerated: isGenerated ?? this.isGenerated,
+      audioData: audioData ?? this.audioData,
+      audioUrl: audioUrl ?? this.audioUrl,
     );
   }
 }

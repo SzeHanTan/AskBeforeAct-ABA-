@@ -4,6 +4,7 @@ import '../../providers/community_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../models/podcast_model.dart';
 import '../../models/community_post_model.dart';
+import '../../widgets/audio_player_widget.dart';
 
 /// Community screen for sharing experiences
 class CommunityScreen extends StatefulWidget {
@@ -586,173 +587,215 @@ class _CommunityScreenState extends State<CommunityScreen> {
           borderRadius: BorderRadius.circular(20),
         ),
         child: Container(
-          constraints: const BoxConstraints(maxWidth: 600, maxHeight: 700),
-          padding: const EdgeInsets.all(32),
+          constraints: const BoxConstraints(maxWidth: 700, maxHeight: 800),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF0F9FF),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
-                      Icons.podcasts,
-                      color: Color(0xFF3B82F6),
-                      size: 28,
-                    ),
+              // Fixed Header
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20),
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
                       children: [
-                        const Text(
-                          'Daily Podcast',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Color(0xFF64748B),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF0F9FF),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.podcasts,
+                            color: Color(0xFF3B82F6),
+                            size: 28,
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          podcast.title,
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF1E293B),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Community Podcast',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Color(0xFF64748B),
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                podcast.title,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF1E293B),
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
                           ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: () => Navigator.pop(context),
                         ),
                       ],
                     ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF8FAFC),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _buildDialogStat('Posts', '${podcast.postCount}'),
-                    _buildDialogStat('Duration', podcast.duration),
-                    _buildDialogStat(
-                      'Date',
-                      '${podcast.date.month}/${podcast.date.day}/${podcast.date.year}',
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF8FAFC),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          _buildDialogStat('Posts', '${podcast.postCount}'),
+                          _buildDialogStat('Duration', podcast.duration),
+                          _buildDialogStat(
+                            'Date',
+                            '${podcast.date.month}/${podcast.date.day}/${podcast.date.year}',
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 24),
-              if (podcast.keyInsights.isNotEmpty) ...[
-                const Text(
-                  'Key Insights',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF1E293B),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                ...podcast.keyInsights.map((insight) => Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Icon(
-                            Icons.check_circle,
-                            size: 18,
-                            color: Color(0xFF10B981),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              insight,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Color(0xFF334155),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    )),
-                const SizedBox(height: 24),
-              ],
-              const Text(
-                'Podcast Script',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF1E293B),
-                ),
-              ),
-              const SizedBox(height: 12),
+              
+              // Scrollable Content
               Expanded(
                 child: SingleChildScrollView(
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF8FAFC),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      podcast.script,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        color: Color(0xFF334155),
-                        height: 1.7,
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Key Insights
+                      if (podcast.keyInsights.isNotEmpty) ...[
+                        const Text(
+                          'Key Insights',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF1E293B),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        ...podcast.keyInsights.map((insight) => Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Icon(
+                                    Icons.check_circle,
+                                    size: 18,
+                                    color: Color(0xFF10B981),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      insight,
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        color: Color(0xFF334155),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )),
+                        const SizedBox(height: 24),
+                      ],
+                      
+                      // Podcast Script
+                      const Text(
+                        'Podcast Script',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF1E293B),
+                        ),
                       ),
-                    ),
+                      const SizedBox(height: 12),
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          podcast.script,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            color: Color(0xFF334155),
+                            height: 1.7,
+                          ),
+                        ),
+                      ),
+                      
+                      const SizedBox(height: 24),
+                      
+                      // Audio Player Section
+                      Consumer<CommunityProvider>(
+                        builder: (context, provider, child) {
+                          // Get the latest podcast data from provider
+                          final latestPodcast = provider.todaysPodcast ?? podcast;
+                          
+                          return AudioPlayerWidget(
+                            audioData: latestPodcast.audioData,
+                            onGenerateAudio: () => provider.generatePodcastAudio(
+                              voiceName: 'Puck',
+                              tone: 'casual',
+                            ),
+                            isGenerating: provider.isGeneratingAudio,
+                            error: provider.audioError,
+                          );
+                        },
+                      ),
+                    ],
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        // TODO: Implement text-to-speech
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Text-to-speech coming soon!'),
-                          ),
-                        );
-                      },
-                      icon: const Icon(Icons.volume_up),
-                      label: const Text('Play Audio'),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        side: const BorderSide(color: Color(0xFF3B82F6)),
-                        foregroundColor: const Color(0xFF3B82F6),
-                      ),
+              
+              // Fixed Footer with Close Button
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(20),
+                    bottomRight: Radius.circular(20),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, -2),
+                    ),
+                  ],
+                ),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.check),
+                    label: const Text('Close'),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      backgroundColor: const Color(0xFF3B82F6),
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.check),
-                      label: const Text('Close'),
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        backgroundColor: const Color(0xFF3B82F6),
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
             ],
           ),
