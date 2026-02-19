@@ -1,13 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../constants/app_colors.dart';
 
 /// Application theme configuration
 class AppTheme {
   static ThemeData get lightTheme {
+    final baseTextTheme = GoogleFonts.notoSansTextTheme();
+    
     return ThemeData(
       useMaterial3: true,
       primaryColor: AppColors.primary,
       scaffoldBackgroundColor: AppColors.background,
+      fontFamily: 'Noto Sans',
+      fontFamilyFallback: const [
+        'Noto Sans Symbols',
+        'Noto Color Emoji',
+      ],
+      textTheme: baseTextTheme,
       
       colorScheme: ColorScheme.fromSeed(
         seedColor: AppColors.primary,

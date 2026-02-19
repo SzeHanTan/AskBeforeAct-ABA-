@@ -11,6 +11,7 @@ import 'services/storage_service.dart';
 import 'services/gemini_service.dart';
 import 'services/podcast_service.dart';
 import 'services/education_service.dart';
+import 'services/chatbot_service.dart';
 
 // Repositories
 import 'repositories/user_repository.dart';
@@ -23,6 +24,7 @@ import 'providers/auth_provider.dart';
 import 'providers/analysis_provider.dart';
 import 'providers/community_provider.dart';
 import 'providers/education_provider.dart';
+import 'providers/chatbot_provider.dart';
 
 // Screens
 import 'views/home/landing_screen.dart';
@@ -74,6 +76,7 @@ class AskBeforeActApp extends StatelessWidget {
 
     final educationRepository = EducationRepository();
     final educationService = EducationService(repository: educationRepository);
+    final chatbotService = ChatbotService();
 
     return MultiProvider(
       providers: [
@@ -92,6 +95,10 @@ class AskBeforeActApp extends StatelessWidget {
         // Education Provider
         ChangeNotifierProvider(
           create: (_) => EducationProvider(educationService: educationService),
+        ),
+        // Chatbot Provider
+        ChangeNotifierProvider(
+          create: (_) => ChatbotProvider(chatbotService: chatbotService),
         ),
       ],
       child: MaterialApp(

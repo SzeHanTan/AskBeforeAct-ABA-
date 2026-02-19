@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../../models/analysis_model.dart';
 import '../../services/image_generation_service.dart';
+import '../../services/report_service.dart';
 
 /// Screen displaying fraud analysis results
 class ResultsScreen extends StatefulWidget {
@@ -17,6 +18,8 @@ class ResultsScreen extends StatefulWidget {
 }
 
 class _ResultsScreenState extends State<ResultsScreen> {
+  final ReportService _reportService = ReportService();
+  bool _isDownloading = false;
   final ImageGenerationService _imageService = ImageGenerationService();
   Map<String, dynamic>? _generatedImage;
   bool _isGeneratingImage = false;
@@ -739,28 +742,34 @@ class _ResultsScreenState extends State<ResultsScreen> {
     return Row(
       children: [
         Expanded(
-          child: OutlinedButton.icon(
-            onPressed: () {
-              // TODO: Share functionality
-            },
-            icon: const Icon(Icons.share_outlined, size: 22),
-            label: const Text(
-              'Share',
-              style: TextStyle(
+          child: ElevatedButton.icon(
+            onPressed: _isDownloading ? null : _downloadReport,
+            icon: _isDownloading 
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : const Icon(Icons.download, size: 22),
+            label: Text(
+              _isDownloading ? 'Generating...' : 'Download Report',
+              style: const TextStyle(
                 fontSize: 17,
                 fontWeight: FontWeight.w600,
               ),
             ),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: const Color(0xFF3B82F6),
-              side: const BorderSide(
-                color: Color(0xFF3B82F6),
-                width: 2,
-              ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF10B981),
+              foregroundColor: Colors.white,
+              disabledBackgroundColor: const Color(0xFFE2E8F0),
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
+              elevation: 0,
             ),
           ),
         ),
@@ -837,5 +846,43 @@ class _ResultsScreenState extends State<ResultsScreen> {
 
   String _formatConfidence(String confidence) {
     return confidence[0].toUpperCase() + confidence.substring(1);
+  }
+  
+  /// Download PDF report for authorities
+  Future<void> _downloadReport() async {
+    setState(() {
+      _isDownloading = true;
+    });
+    
+    try {
+      await _reportService.downloadReport(widget.analysis);
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Report downloaded successfully! You can now share it with authorities.'),
+            backgroundColor: Color(0xFF10B981),
+            behavior: SnackBarBehavior.floating,
+            duration: Duration(seconds: 4),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to download report: $e'),
+            backgroundColor: const Color(0xFFEF4444),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isDownloading = false;
+        });
+      }
+    }
   }
 }

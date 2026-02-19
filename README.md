@@ -19,6 +19,7 @@ AskBeforeAct is an AI-powered web application that helps users detect online fra
 - 👥 Community platform for sharing experiences
 - 📚 Educational resources on common scams
 - 📰 Real-time scam news from Google News RSS
+- 💬 AI chatbot for Q&A and news summarization
 - 🎙️ AI-generated educational podcasts
 
 ---
@@ -71,6 +72,11 @@ AskBeforeAct is an AI-powered web application that helps users detect online fra
 - **[LEARN_SECTION_SUMMARY.md](LEARN_SECTION_SUMMARY.md)** - Feature summary
 - **[LEARN_SECTION_CHECKLIST.md](LEARN_SECTION_CHECKLIST.md)** - Deployment checklist
 - **[functions/README.md](functions/README.md)** - Cloud Functions documentation
+
+### AI Chatbot
+- **[CHATBOT_FEATURE.md](CHATBOT_FEATURE.md)** - Complete chatbot guide
+- **[CHATBOT_QUICK_REFERENCE.md](CHATBOT_QUICK_REFERENCE.md)** - Quick reference
+- **[CHATBOT_IMPLEMENTATION_SUMMARY.md](CHATBOT_IMPLEMENTATION_SUMMARY.md)** - Implementation details
 
 ### Architecture & Design
 - **[01_PRD_MVP.md](01_PRD_MVP.md)** - Product requirements (MVP scope)

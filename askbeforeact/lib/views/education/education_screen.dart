@@ -4,8 +4,10 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../models/education_content_model.dart';
 import '../../models/scam_news_model.dart';
 import '../../providers/education_provider.dart';
+import '../../providers/chatbot_provider.dart';
+import '../../widgets/chatbot_widget.dart';
 
-/// Education hub screen with Firebase integration
+/// Education hub screen with Firebase integration and AI chatbot
 class EducationScreen extends StatefulWidget {
   const EducationScreen({super.key});
 
@@ -22,9 +24,22 @@ class _EducationScreenState extends State<EducationScreen> with SingleTickerProv
     _tabController = TabController(length: 2, vsync: this);
     
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<EducationProvider>().loadEducationContent();
-      context.read<EducationProvider>().loadScamNews();
+      final educationProvider = context.read<EducationProvider>();
+      educationProvider.loadEducationContent();
+      educationProvider.loadScamNews();
+      
+      _initializeChatbot();
     });
+  }
+
+  void _initializeChatbot() {
+    final educationProvider = context.read<EducationProvider>();
+    final chatbotProvider = context.read<ChatbotProvider>();
+    
+    chatbotProvider.initializeWithContext(
+      educationContent: educationProvider.educationContent,
+      scamNews: educationProvider.scamNews,
+    );
   }
 
   @override
@@ -48,6 +63,16 @@ class _EducationScreenState extends State<EducationScreen> with SingleTickerProv
             color: Color(0xFF1E293B),
           ),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(
+              Icons.smart_toy,
+              color: Color(0xFF3B82F6),
+            ),
+            onPressed: () => _openChatbot(),
+            tooltip: 'AI Assistant',
+          ),
+        ],
         bottom: TabBar(
           controller: _tabController,
           labelColor: const Color(0xFF3B82F6),
@@ -66,7 +91,15 @@ class _EducationScreenState extends State<EducationScreen> with SingleTickerProv
           _buildNewsTab(),
         ],
       ),
+      floatingActionButton: ChatbotFloatingButton(
+        onPressed: () => _openChatbot(),
+      ),
     );
+  }
+
+  void _openChatbot() {
+    _initializeChatbot();
+    ChatbotDialog.show(context);
   }
 
   Widget _buildEducationTab() {
@@ -141,7 +174,7 @@ class _EducationScreenState extends State<EducationScreen> with SingleTickerProv
                           padding: const EdgeInsets.only(bottom: 16),
                           child: _buildEducationCard(content),
                         );
-                      }).toList(),
+                      }),
                     ],
                   ),
                 ),
@@ -211,12 +244,35 @@ class _EducationScreenState extends State<EducationScreen> with SingleTickerProv
                         ),
                       ),
                       const SizedBox(height: 8),
-                      const Text(
-                        'Stay updated with the latest scam alerts and fraud news',
-                        style: TextStyle(
-                          fontSize: 17,
-                          color: Color(0xFF64748B),
-                        ),
+                      Row(
+                        children: [
+                          const Expanded(
+                            child: Text(
+                              'Stay updated with the latest scam alerts and fraud news',
+                              style: TextStyle(
+                                fontSize: 17,
+                                color: Color(0xFF64748B),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          ElevatedButton.icon(
+                            onPressed: () => _summarizeNews(provider.scamNews),
+                            icon: const Icon(Icons.summarize, size: 18),
+                            label: const Text('AI Summary'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF3B82F6),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 32),
                       
@@ -225,7 +281,7 @@ class _EducationScreenState extends State<EducationScreen> with SingleTickerProv
                           padding: const EdgeInsets.only(bottom: 16),
                           child: _buildNewsCard(news),
                         );
-                      }).toList(),
+                      }),
                     ],
                   ),
                 ),
@@ -564,7 +620,7 @@ class _EducationScreenState extends State<EducationScreen> with SingleTickerProv
               ),
             ],
           ),
-        )).toList(),
+        )),
       ],
     );
   }
@@ -580,5 +636,15 @@ class _EducationScreenState extends State<EducationScreen> with SingleTickerProv
         );
       }
     }
+  }
+
+  void _summarizeNews(List<ScamNewsModel> news) {
+    _initializeChatbot();
+    
+    ChatbotDialog.show(context);
+    
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ChatbotProvider>().summarizeNews(news);
+    });
   }
 }

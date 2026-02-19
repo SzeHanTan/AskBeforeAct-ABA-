@@ -7,8 +7,9 @@ This document describes the complete integration of the Learn section with Fireb
 The Learn section now features:
 1. **Education Content Tab**: Common scam types with detailed information from Firebase
 2. **Latest News Tab**: Real-time scam and fraud news from Google News RSS
-3. **Firebase Cloud Functions**: Automated news fetching every 6 hours
-4. **Offline Support**: Fallback data when Firebase is unavailable
+3. **AI Chatbot**: Gemini-powered assistant for Q&A and news summarization
+4. **Firebase Cloud Functions**: Automated news fetching every 6 hours
+5. **Offline Support**: Fallback data when Firebase is unavailable
 
 ## Architecture
 
