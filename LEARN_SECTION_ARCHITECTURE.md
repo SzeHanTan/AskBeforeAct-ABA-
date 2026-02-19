@@ -1,0 +1,488 @@
+# Learn Section Architecture Diagram
+
+## System Overview
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                         EXTERNAL DATA SOURCE                         │
+│                                                                       │
+│  ┌────────────────────────────────────────────────────────────────┐ │
+│  │              Google News RSS Feed                               │ │
+│  │  URL: news.google.com/rss/search                                │ │
+│  │  Query: Scam OR Fraud OR 诈骗                                   │ │
+│  │  Region: Malaysia (MY)                                          │ │
+│  │  Language: Chinese (zh-CN)                                      │ │
+│  └────────────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────────┘
+                                  │
+                                  │ HTTP GET (every 6 hours)
+                                  ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                      FIREBASE CLOUD FUNCTIONS                        │
+│                                                                       │
+│  ┌────────────────────────────────────────────────────────────────┐ │
+│  │  fetchScamNews (Scheduled Function)                            │ │
+│  │  ┌──────────────────────────────────────────────────────────┐  │ │
+│  │  │ 1. Fetch RSS feed using axios                            │  │ │
+│  │  │ 2. Parse XML to JSON using rss-parser                    │  │ │
+│  │  │ 3. For each news item:                                   │  │ │
+│  │  │    - Create document ID from URL (base64)                │  │ │
+│  │  │    - Check if exists in Firestore                        │  │ │
+│  │  │    - Create new or update existing                       │  │ │
+│  │  │ 4. Batch write to Firestore                              │  │ │
+│  │  │ 5. Log results                                            │  │ │
+│  │  └──────────────────────────────────────────────────────────┘  │ │
+│  │  Trigger: Pub/Sub Scheduler (every 6 hours)                   │ │
+│  │  Timezone: Asia/Kuala_Lumpur                                   │ │
+│  └────────────────────────────────────────────────────────────────┘ │
+│                                                                       │
+│  ┌────────────────────────────────────────────────────────────────┐ │
+│  │  fetchScamNewsManual (HTTP Function)                           │ │
+│  │  - Same logic as scheduled function                            │ │
+│  │  - Manual trigger for testing                                  │ │
+│  │  - Returns JSON response                                       │ │
+│  └────────────────────────────────────────────────────────────────┘ │
+│                                                                       │
+│  ┌────────────────────────────────────────────────────────────────┐ │
+│  │  initializeEducationContent (HTTP Function)                    │ │
+│  │  - One-time initialization                                     │ │
+│  │  - Creates 5 education content documents                       │ │
+│  │  - Populates education_content collection                      │ │
+│  └────────────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────────┘
+                                  │
+                                  │ Write
+                                  ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                         FIREBASE FIRESTORE                           │
+│                                                                       │
+│  ┌──────────────────────────┐  ┌──────────────────────────────────┐ │
+│  │  education_content       │  │  scam_news                       │ │
+│  │  Collection              │  │  Collection                      │ │
+│  │  ┌────────────────────┐  │  │  ┌────────────────────────────┐ │ │
+│  │  │ phishing           │  │  │  │ [base64_url_1]             │ │ │
+│  │  │ - title            │  │  │  │ - title                    │ │ │
+│  │  │ - description      │  │  │  │ - link                     │ │ │
+│  │  │ - warningSigns[]   │  │  │  │ - pubDate                  │ │ │
+│  │  │ - preventionTips[] │  │  │  │ - contentSnippet           │ │ │
+│  │  │ - example          │  │  │  │ - source                   │ │ │
+│  │  │ - order: 1         │  │  │  │ - createdAt                │ │ │
+│  │  └────────────────────┘  │  │  │ - updatedAt                │ │ │
+│  │  ┌────────────────────┐  │  │  └────────────────────────────┘ │ │
+│  │  │ romance            │  │  │  ┌────────────────────────────┐ │ │
+│  │  │ - ...              │  │  │  │ [base64_url_2]             │ │ │
+│  │  └────────────────────┘  │  │  │ - ...                      │ │ │
+│  │  ┌────────────────────┐  │  │  └────────────────────────────┘ │ │
+│  │  │ payment            │  │  │  ...                             │ │
+│  │  │ - ...              │  │  │  (20+ documents)                 │ │
+│  │  └────────────────────┘  │  │                                  │ │
+│  │  ┌────────────────────┐  │  │                                  │ │
+│  │  │ job                │  │  │                                  │ │
+│  │  │ - ...              │  │  │                                  │ │
+│  │  └────────────────────┘  │  │                                  │ │
+│  │  ┌────────────────────┐  │  │                                  │ │
+│  │  │ tech_support       │  │  │                                  │ │
+│  │  │ - ...              │  │  │                                  │ │
+│  │  └────────────────────┘  │  │                                  │ │
+│  │                          │  │                                  │ │
+│  │  Rules: Public Read      │  │  Rules: Public Read              │ │
+│  │         Functions Write  │  │         Functions Write          │ │
+│  └──────────────────────────┘  └──────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────────┘
+                                  │
+                                  │ Read (Stream/Future)
+                                  ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                        FLUTTER APPLICATION                           │
+│                                                                       │
+│  ┌────────────────────────────────────────────────────────────────┐ │
+│  │                    PRESENTATION LAYER                           │ │
+│  │  ┌──────────────────────────────────────────────────────────┐  │ │
+│  │  │  EducationScreen (StatefulWidget)                        │  │ │
+│  │  │  ┌────────────────────┐  ┌────────────────────────────┐  │  │ │
+│  │  │  │  Common Scams Tab  │  │  Latest News Tab           │  │  │ │
+│  │  │  │  ┌──────────────┐  │  │  ┌──────────────────────┐  │  │  │ │
+│  │  │  │  │ 🎣 Phishing  │  │  │  │ News Card 1          │  │  │  │ │
+│  │  │  │  │   Emails     │  │  │  │ - Source badge       │  │  │  │ │
+│  │  │  │  └──────────────┘  │  │  │ - Date               │  │  │  │ │
+│  │  │  │  ┌──────────────┐  │  │  │ - Title              │  │  │  │ │
+│  │  │  │  │ 💔 Romance   │  │  │  │ - Snippet            │  │  │  │ │
+│  │  │  │  │   Scams      │  │  │  │ - Read more link     │  │  │  │ │
+│  │  │  │  └──────────────┘  │  │  └──────────────────────┘  │  │  │ │
+│  │  │  │  ┌──────────────┐  │  │  ┌──────────────────────┐  │  │  │ │
+│  │  │  │  │ 💳 Payment   │  │  │  │ News Card 2          │  │  │  │ │
+│  │  │  │  │   Fraud      │  │  │  │ - ...                │  │  │  │ │
+│  │  │  │  └──────────────┘  │  │  └──────────────────────┘  │  │  │ │
+│  │  │  │  ┌──────────────┐  │  │  ...                        │  │  │ │
+│  │  │  │  │ 💼 Job Scams │  │  │  (20+ cards)                │  │  │ │
+│  │  │  │  └──────────────┘  │  │                              │  │  │ │
+│  │  │  │  ┌──────────────┐  │  │  Pull-to-refresh            │  │  │ │
+│  │  │  │  │ 🔧 Tech      │  │  │  Loading states             │  │  │ │
+│  │  │  │  │   Support    │  │  │  Error handling             │  │  │ │
+│  │  │  │  └──────────────┘  │  │                              │  │  │ │
+│  │  │  │                    │  │                              │  │  │ │
+│  │  │  │  Tap → Modal       │  │  Tap → Open in browser      │  │  │ │
+│  │  │  │  Pull-to-refresh   │  │                              │  │  │ │
+│  │  │  └────────────────────┘  └────────────────────────────┘  │  │ │
+│  │  └──────────────────────────────────────────────────────────┘  │ │
+│  └────────────────────────────────────────────────────────────────┘ │
+│                                  │                                   │
+│                                  ▼                                   │
+│  ┌────────────────────────────────────────────────────────────────┐ │
+│  │                      STATE MANAGEMENT                           │ │
+│  │  ┌──────────────────────────────────────────────────────────┐  │ │
+│  │  │  EducationProvider (ChangeNotifier)                      │  │ │
+│  │  │  ┌────────────────────────────────────────────────────┐  │  │ │
+│  │  │  │  State:                                            │  │  │ │
+│  │  │  │  - _educationContent: List<EducationContentModel> │  │  │ │
+│  │  │  │  - _scamNews: List<ScamNewsModel>                 │  │  │ │
+│  │  │  │  - _isLoadingContent: bool                        │  │  │ │
+│  │  │  │  - _isLoadingNews: bool                           │  │  │ │
+│  │  │  │  - _error: String?                                │  │  │ │
+│  │  │  └────────────────────────────────────────────────────┘  │  │ │
+│  │  │  ┌────────────────────────────────────────────────────┐  │  │ │
+│  │  │  │  Methods:                                          │  │  │ │
+│  │  │  │  - loadEducationContent()                         │  │  │ │
+│  │  │  │  - loadScamNews()                                 │  │  │ │
+│  │  │  │  - streamEducationContent()                       │  │  │ │
+│  │  │  │  - streamScamNews()                               │  │  │ │
+│  │  │  │  - searchNews(query)                              │  │  │ │
+│  │  │  │  - refreshAll()                                   │  │  │ │
+│  │  │  └────────────────────────────────────────────────────┘  │  │ │
+│  │  └──────────────────────────────────────────────────────────┘  │ │
+│  └────────────────────────────────────────────────────────────────┘ │
+│                                  │                                   │
+│                                  ▼                                   │
+│  ┌────────────────────────────────────────────────────────────────┐ │
+│  │                      BUSINESS LOGIC                             │ │
+│  │  ┌──────────────────────────────────────────────────────────┐  │ │
+│  │  │  EducationService                                        │  │ │
+│  │  │  - getEducationContent()                                 │  │ │
+│  │  │  - getEducationContentById(id)                          │  │ │
+│  │  │  - getScamNews(limit)                                   │  │ │
+│  │  │  - getRecentScamNews()                                  │  │ │
+│  │  │  - searchScamNews(query)                                │  │ │
+│  │  │  - getEducationContentWithFallback()                    │  │ │
+│  │  │  - _getFallbackEducationContent() [Offline support]    │  │ │
+│  │  └──────────────────────────────────────────────────────────┘  │ │
+│  └────────────────────────────────────────────────────────────────┘ │
+│                                  │                                   │
+│                                  ▼                                   │
+│  ┌────────────────────────────────────────────────────────────────┐ │
+│  │                      DATA ACCESS LAYER                          │ │
+│  │  ┌──────────────────────────────────────────────────────────┐  │ │
+│  │  │  EducationRepository                                     │  │ │
+│  │  │  - getEducationContent() → Stream                        │  │ │
+│  │  │  - getEducationContentById(id) → Future                 │  │ │
+│  │  │  - getScamNews(limit) → Stream                          │  │ │
+│  │  │  - getScamNewsPaginated(limit, lastDoc) → Future        │  │ │
+│  │  │  - searchScamNews(query) → Future                       │  │ │
+│  │  │  - getScamNewsCount() → Future                          │  │ │
+│  │  │  - getRecentScamNews() → Stream                         │  │ │
+│  │  └──────────────────────────────────────────────────────────┘  │ │
+│  └────────────────────────────────────────────────────────────────┘ │
+│                                  │                                   │
+│                                  ▼                                   │
+│  ┌────────────────────────────────────────────────────────────────┐ │
+│  │                         DATA MODELS                             │ │
+│  │  ┌────────────────────────┐  ┌──────────────────────────────┐  │ │
+│  │  │ EducationContentModel  │  │  ScamNewsModel               │  │ │
+│  │  │ - id                   │  │  - id                        │  │ │
+│  │  │ - title                │  │  - title                     │  │ │
+│  │  │ - description          │  │  - link                      │  │ │
+│  │  │ - warningSigns[]       │  │  - pubDate                   │  │ │
+│  │  │ - preventionTips[]     │  │  - contentSnippet            │  │ │
+│  │  │ - example              │  │  - source                    │  │ │
+│  │  │ - order                │  │  - createdAt                 │  │ │
+│  │  │                        │  │  - updatedAt                 │  │ │
+│  │  │ Getters:               │  │                              │  │ │
+│  │  │ - icon (emoji)         │  │  Getters:                    │  │ │
+│  │  │ - colorValue           │  │  - formattedDate             │  │ │
+│  │  │                        │  │    (e.g., "2 hours ago")     │  │ │
+│  │  │ Methods:               │  │                              │  │ │
+│  │  │ - fromFirestore()      │  │  Methods:                    │  │ │
+│  │  │ - fromJson()           │  │  - fromFirestore()           │  │ │
+│  │  │ - toJson()             │  │  - fromJson()                │  │ │
+│  │  └────────────────────────┘  │  - toJson()                  │  │ │
+│  │                               └──────────────────────────────┘  │ │
+│  └────────────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+## Data Flow
+
+### 1. News Fetching Flow (Automated)
+
+```
+Google News RSS
+      │
+      │ Every 6 hours (Pub/Sub Scheduler)
+      ▼
+fetchScamNews Cloud Function
+      │
+      ├─→ Fetch RSS (axios)
+      │
+      ├─→ Parse XML (rss-parser)
+      │
+      ├─→ For each item:
+      │   ├─→ Generate document ID (base64 URL)
+      │   ├─→ Check if exists
+      │   └─→ Create/Update document
+      │
+      └─→ Batch write to Firestore
+            │
+            ▼
+      scam_news collection
+```
+
+### 2. Education Content Flow (One-time)
+
+```
+initializeEducationContent Function (HTTP)
+      │
+      ├─→ Create 5 documents:
+      │   ├─→ phishing
+      │   ├─→ romance
+      │   ├─→ payment
+      │   ├─→ job
+      │   └─→ tech_support
+      │
+      └─→ Batch write to Firestore
+            │
+            ▼
+      education_content collection
+```
+
+### 3. App Data Loading Flow
+
+```
+User opens Learn section
+      │
+      ▼
+EducationScreen initializes
+      │
+      ├─→ loadEducationContent()
+      │   │
+      │   ▼
+      │   EducationProvider
+      │   │
+      │   ▼
+      │   EducationService
+      │   │
+      │   ▼
+      │   EducationRepository
+      │   │
+      │   ▼
+      │   Firestore.collection('education_content')
+      │   │
+      │   ▼
+      │   Stream<List<EducationContentModel>>
+      │   │
+      │   ▼
+      │   UI updates
+      │
+      └─→ loadScamNews()
+          │
+          ▼
+          EducationProvider
+          │
+          ▼
+          EducationService
+          │
+          ▼
+          EducationRepository
+          │
+          ▼
+          Firestore.collection('scam_news')
+          │
+          ▼
+          Stream<List<ScamNewsModel>>
+          │
+          ▼
+          UI updates
+```
+
+### 4. User Interaction Flow
+
+```
+User taps scam card
+      │
+      ▼
+_showEducationDetails()
+      │
+      ▼
+Modal/BottomSheet opens
+      │
+      └─→ Shows:
+          ├─→ Warning Signs
+          ├─→ Prevention Tips
+          └─→ Example
+
+User taps news card
+      │
+      ▼
+_launchUrl()
+      │
+      ▼
+url_launcher package
+      │
+      ▼
+External browser opens
+      │
+      └─→ Article loads
+```
+
+### 5. Refresh Flow
+
+```
+User pulls down
+      │
+      ▼
+RefreshIndicator triggered
+      │
+      ├─→ Common Scams Tab:
+      │   │
+      │   ▼
+      │   provider.loadEducationContent()
+      │   │
+      │   └─→ Re-fetch from Firestore
+      │
+      └─→ Latest News Tab:
+          │
+          ▼
+          provider.loadScamNews()
+          │
+          └─→ Re-fetch from Firestore
+```
+
+## Component Dependencies
+
+```
+main.dart
+  └─→ Initializes MultiProvider
+       └─→ EducationProvider
+            └─→ EducationService
+                 └─→ EducationRepository
+                      └─→ FirebaseFirestore
+
+EducationScreen
+  └─→ Consumer<EducationProvider>
+       ├─→ educationContent (List)
+       ├─→ scamNews (List)
+       ├─→ isLoadingContent (bool)
+       ├─→ isLoadingNews (bool)
+       └─→ error (String?)
+```
+
+## Security Model
+
+```
+Firestore Security Rules
+  │
+  ├─→ education_content
+  │   ├─→ Read: Public (allow read: if true)
+  │   └─→ Write: Cloud Functions only (allow write: if false)
+  │
+  └─→ scam_news
+      ├─→ Read: Public (allow read: if true)
+      └─→ Write: Cloud Functions only (allow write: if false)
+
+Cloud Functions
+  └─→ Run with Firebase Admin SDK
+      └─→ Full read/write access to Firestore
+```
+
+## Deployment Architecture
+
+```
+Local Development
+  │
+  ├─→ functions/
+  │   └─→ npm install
+  │
+  ├─→ askbeforeact/
+  │   └─→ flutter pub get
+  │
+  └─→ firebase deploy
+       │
+       ├─→ --only functions
+       │   └─→ Deploys to Cloud Functions
+       │
+       ├─→ --only firestore:rules
+       │   └─→ Updates Firestore rules
+       │
+       └─→ --only hosting
+           └─→ Deploys Flutter web app
+```
+
+## Monitoring & Logging
+
+```
+Firebase Console
+  │
+  ├─→ Functions
+  │   ├─→ Execution logs
+  │   ├─→ Error tracking
+  │   └─→ Performance metrics
+  │
+  ├─→ Firestore
+  │   ├─→ Usage statistics
+  │   ├─→ Document counts
+  │   └─→ Storage size
+  │
+  └─→ Cloud Scheduler
+      ├─→ Job execution history
+      └─→ Success/failure rates
+
+Command Line
+  │
+  └─→ firebase functions:log
+      └─→ Real-time log streaming
+```
+
+## Error Handling Flow
+
+```
+Error occurs
+  │
+  ├─→ Cloud Function
+  │   ├─→ Log error
+  │   ├─→ Throw exception
+  │   └─→ Retry mechanism (automatic)
+  │
+  └─→ Flutter App
+      ├─→ Catch exception
+      ├─→ Set error state
+      ├─→ Show error UI
+      └─→ Provide retry button
+          │
+          └─→ User taps retry
+              └─→ Re-attempt operation
+```
+
+## Offline Support
+
+```
+App starts without internet
+  │
+  ├─→ Education Content
+  │   ├─→ Try Firestore (timeout 5s)
+  │   ├─→ Timeout occurs
+  │   └─→ Return fallback data (hardcoded)
+  │
+  └─→ Scam News
+      ├─→ Try Firestore cache
+      ├─→ Return cached data if available
+      └─→ Show empty state if no cache
+```
+
+---
+
+This architecture provides:
+- ✅ Scalability (Cloud Functions auto-scale)
+- ✅ Reliability (Firestore replication)
+- ✅ Performance (Firestore caching)
+- ✅ Security (Firestore rules)
+- ✅ Maintainability (Clean architecture)
+- ✅ Offline support (Fallback data)
+- ✅ Real-time updates (Firestore streams)

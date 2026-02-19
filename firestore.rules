@@ -70,10 +70,32 @@ service cloud.firestore {
       allow delete: if isOwner(resource.data.userId);
     }
     
-    // Education content (read-only)
+    // Education content (read-only, Cloud Functions can write)
+    match /education_content/{contentId} {
+      allow read: if true;
+      allow write: if false; // Only Cloud Functions can write
+    }
+    
+    // Scam news (read-only, Cloud Functions can write)
+    match /scam_news/{newsId} {
+      allow read: if true;
+      allow write: if false; // Only Cloud Functions can write
+    }
+    
+    // Legacy education content (deprecated, use education_content)
     match /educationContent/{docId} {
       allow read: if true;
-      allow write: if false; // Admin only via console
+      allow write: if false;
+    }
+
+    match /education_content/{contentId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /scam_news/{newsId} {
+      allow read: if true;
+      allow write: if false;
     }
   }
 }

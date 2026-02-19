@@ -18,6 +18,8 @@ AskBeforeAct is an AI-powered web application that helps users detect online fra
 - 📊 Analysis history tracking
 - 👥 Community platform for sharing experiences
 - 📚 Educational resources on common scams
+- 📰 Real-time scam news from Google News RSS
+- 🎙️ AI-generated educational podcasts
 
 ---
 
@@ -34,17 +36,23 @@ AskBeforeAct is an AI-powered web application that helps users detect online fra
 - [x] Firebase project created
 - [x] Security rules defined
 - [x] Setup documentation prepared
+- [x] Firebase services configuration
+- [x] Flutter app development (MVP)
+- [x] Gemini AI integration
+- [x] Community platform with podcasts
+- [x] Learn section with Firebase integration
+- [x] Real-time scam news fetching
+- [x] Cloud Functions for automated news updates
 
 ### 🔄 In Progress
-- [ ] Firebase services configuration
-- [ ] Flutter app development
-- [ ] Gemini AI integration
+- [ ] UI/UX refinement
+- [ ] Testing and QA
+- [ ] Performance optimization
 
 ### 📅 Upcoming
-- [ ] UI/UX implementation
-- [ ] Testing and QA
-- [ ] Deployment to Vercel
+- [ ] Deployment to Firebase Hosting
 - [ ] Beta launch
+- [ ] User feedback collection
 
 ---
 
@@ -56,6 +64,14 @@ AskBeforeAct is an AI-powered web application that helps users detect online fra
 - **[FIREBASE_SETUP_SUMMARY.md](FIREBASE_SETUP_SUMMARY.md)** - Overview and reference
 - **[FIREBASE_SETUP_FLOWCHART.md](FIREBASE_SETUP_FLOWCHART.md)** - Visual setup guide
 
+### Learn Section Integration
+- **[LEARN_SECTION_QUICK_START.md](LEARN_SECTION_QUICK_START.md)** - 5-minute setup guide
+- **[LEARN_SECTION_INTEGRATION.md](LEARN_SECTION_INTEGRATION.md)** - Complete integration guide
+- **[LEARN_SECTION_ARCHITECTURE.md](LEARN_SECTION_ARCHITECTURE.md)** - Architecture diagrams
+- **[LEARN_SECTION_SUMMARY.md](LEARN_SECTION_SUMMARY.md)** - Feature summary
+- **[LEARN_SECTION_CHECKLIST.md](LEARN_SECTION_CHECKLIST.md)** - Deployment checklist
+- **[functions/README.md](functions/README.md)** - Cloud Functions documentation
+
 ### Architecture & Design
 - **[01_PRD_MVP.md](01_PRD_MVP.md)** - Product requirements (MVP scope)
 - **[03_TECH_STACK.md](03_TECH_STACK.md)** - Technology stack details
@@ -65,6 +81,7 @@ AskBeforeAct is an AI-powered web application that helps users detect online fra
 - **[firestore.rules](firestore.rules)** - Firestore security rules
 - **[storage.rules](storage.rules)** - Storage security rules
 - **[firestore.indexes.json](firestore.indexes.json)** - Database indexes
+- **[firebase.json](firebase.json)** - Firebase configuration
 
 ---
 
@@ -76,8 +93,9 @@ AskBeforeAct is an AI-powered web application that helps users detect online fra
 | **Backend** | Firebase | Serverless backend (Auth, DB, Storage) |
 | **Database** | Cloud Firestore | NoSQL document database |
 | **Storage** | Firebase Storage | Image/file hosting |
-| **AI** | Gemini 1.5 Flash | Fraud detection analysis |
-| **Hosting** | Vercel | Web hosting & deployment |
+| **AI** | Gemini 1.5 Flash | Fraud detection & content generation |
+| **Cloud Functions** | Firebase Functions | Automated news fetching & processing |
+| **Hosting** | Firebase Hosting | Web hosting & deployment |
 | **State Management** | Provider | Flutter state management |
 
 **Total Cost:** $0/month (free tiers)
@@ -122,7 +140,8 @@ Collections:
 - `users` - User profiles
 - `analyses` - Fraud analysis results
 - `communityPosts` - Community shared experiences
-- `educationContent` - Scam education guides
+- `education_content` - Scam education guides (5 types)
+- `scam_news` - Real-time scam news articles (auto-updated)
 
 ### 3. Firebase Storage
 - Screenshot uploads
@@ -236,16 +255,72 @@ communityPosts/{postId}
 
 ### Education Content Collection
 ```javascript
-educationContent/{scamTypeId}
+education_content/{scamTypeId}
   - id: string
   - title: string
   - description: string
-  - icon: string (emoji)
   - warningSigns: array<string>
   - preventionTips: array<string>
   - example: string
   - order: number
 ```
+
+### Scam News Collection
+```javascript
+scam_news/{newsId}
+  - title: string
+  - link: string (URL to article)
+  - pubDate: timestamp
+  - contentSnippet: string
+  - source: string
+  - createdAt: timestamp
+  - updatedAt: timestamp
+```
+
+---
+
+## 📰 Learn Section Features
+
+### Education Content
+- **5 Common Scam Types**: Phishing, Romance, Payment, Job, Tech Support
+- **Detailed Information**: Warning signs, prevention tips, real examples
+- **Interactive UI**: Tap cards to view detailed modal with full information
+- **Offline Support**: Fallback data when Firebase is unavailable
+
+### Real-Time Scam News
+- **Automated Updates**: Cloud Function fetches news every 6 hours
+- **Google News RSS**: Targets Malaysia/Chinese context
+- **Search Terms**: Scam OR Fraud OR 诈骗
+- **Duplicate Prevention**: Uses URL as document ID
+- **Manual Trigger**: HTTP function for immediate updates
+
+### Cloud Functions
+1. **`fetchScamNews`** (Scheduled)
+   - Runs every 6 hours (12 AM, 6 AM, 12 PM, 6 PM GMT+8)
+   - Fetches and parses Google News RSS
+   - Stores in Firestore `scam_news` collection
+   - Prevents duplicates automatically
+
+2. **`fetchScamNewsManual`** (HTTP)
+   - Manual trigger for testing
+   - Same functionality as scheduled version
+   - Returns JSON response with stats
+
+3. **`initializeEducationContent`** (HTTP)
+   - One-time initialization
+   - Populates `education_content` collection
+   - Creates 5 scam type documents
+
+### Setup Learn Section
+```bash
+# Quick setup (5 minutes)
+cd functions && npm install && cd ..
+firebase deploy --only functions
+curl https://YOUR_REGION-YOUR_PROJECT_ID.cloudfunctions.net/initializeEducationContent
+curl https://YOUR_REGION-YOUR_PROJECT_ID.cloudfunctions.net/fetchScamNewsManual
+```
+
+For detailed instructions, see **[LEARN_SECTION_QUICK_START.md](LEARN_SECTION_QUICK_START.md)**.
 
 ---
 
@@ -275,10 +350,11 @@ educationContent/{scamTypeId}
 ### Free Tier Limits
 | Service | Free Tier | Estimated Usage | Status |
 |---------|-----------|-----------------|--------|
-| **Vercel Hosting** | 100GB bandwidth | ~5GB/month | ✅ Free |
+| **Firebase Hosting** | 10GB storage, 360MB/day | ~1GB, 50MB/day | ✅ Free |
 | **Firebase Auth** | Unlimited | ~500 users | ✅ Free |
-| **Firestore** | 50K reads, 20K writes/day | ~1K reads, 500 writes/day | ✅ Free |
+| **Firestore** | 50K reads, 20K writes/day | ~5K reads, 3K writes/day | ✅ Free |
 | **Firebase Storage** | 5GB, 1GB/day transfer | ~500MB, 100MB/day | ✅ Free |
+| **Cloud Functions** | 2M invocations/month | ~120/month (scheduled) | ✅ Free |
 | **Gemini 1.5 Flash** | 15 RPM, 1M tokens/min | ~500 requests/day | ✅ Free |
 
 **Total Monthly Cost:** $0

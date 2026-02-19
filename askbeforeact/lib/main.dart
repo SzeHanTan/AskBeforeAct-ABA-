@@ -10,16 +10,19 @@ import 'services/firestore_service.dart';
 import 'services/storage_service.dart';
 import 'services/gemini_service.dart';
 import 'services/podcast_service.dart';
+import 'services/education_service.dart';
 
 // Repositories
 import 'repositories/user_repository.dart';
 import 'repositories/analysis_repository.dart';
 import 'repositories/community_repository.dart';
+import 'repositories/education_repository.dart';
 
 // Providers
 import 'providers/auth_provider.dart';
 import 'providers/analysis_provider.dart';
 import 'providers/community_provider.dart';
+import 'providers/education_provider.dart';
 
 // Screens
 import 'views/home/landing_screen.dart';
@@ -69,6 +72,9 @@ class AskBeforeActApp extends StatelessWidget {
       podcastService: podcastService,
     );
 
+    final educationRepository = EducationRepository();
+    final educationService = EducationService(repository: educationRepository);
+
     return MultiProvider(
       providers: [
         // Auth Provider
@@ -82,6 +88,10 @@ class AskBeforeActApp extends StatelessWidget {
         // Community Provider
         ChangeNotifierProvider(
           create: (_) => CommunityProvider(communityRepository: communityRepository),
+        ),
+        // Education Provider
+        ChangeNotifierProvider(
+          create: (_) => EducationProvider(educationService: educationService),
         ),
       ],
       child: MaterialApp(

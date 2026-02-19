@@ -98,14 +98,14 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
       }
       
       // Create blob URL - try multiple MIME types if needed
-      final mimeTypesToTry = [
+      final mimeTypesToTry = {
         mimeType,
         'audio/wav',
         'audio/x-wav',
         'audio/mpeg',
         'audio/mp3',
         'audio/*',
-      ].toSet().toList(); // Remove duplicates
+      }.toList(); // Remove duplicates
       
       print('🔄 Will try MIME types: $mimeTypesToTry');
       
