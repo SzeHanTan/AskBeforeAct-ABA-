@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:intl/intl.dart';
+import 'package:printing/printing.dart';
 import '../models/analysis_model.dart';
 import 'report_service_web.dart';
 
@@ -12,11 +13,22 @@ class ReportService {
     final pdf = pw.Document();
     final now = DateTime.now();
     final dateFormatter = DateFormat('MMMM dd, yyyy \'at\' HH:mm');
+    
+    // Load fonts that support Chinese characters
+    final ttf = await PdfGoogleFonts.notoSansSCRegular();
+    final ttfBold = await PdfGoogleFonts.notoSansSCBold();
+    
+    // Create theme with Chinese-compatible fonts
+    final theme = pw.ThemeData.withFont(
+      base: ttf,
+      bold: ttfBold,
+    );
 
     pdf.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.all(40),
+        theme: theme,
         build: (context) => [
           // Header
           _buildHeader(),
