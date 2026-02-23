@@ -36,7 +36,6 @@ The solution is built on a highly scalable, serverless architecture designed for
 
 ![Technical Architecture](Technical_Architecture_ABA.png)
 
-&lt;pre&gt;&lt;code&gt;```text
 ┌─────────────────────────────────────────────────────┐
 │                     USER INTERFACE                  │
 │                Flutter Web Application              │
@@ -55,7 +54,7 @@ The solution is built on a highly scalable, serverless architecture designed for
 └───────┬──────┘ └───┬──────┘ └───┬─────────┘
         │            │            │
 ┌───────▼────────────▼────────────▼─────────┐
-│                   SERVICES LAYER            │
+│                   SERVICES LAYER          │
 │  ┌──────────┐  ┌──────────┐  ┌─────────┐  │
 │  │  Gemini  │  │Firestore │  │ Podcast │  │
 │  │ Service  │  │ Service  │  │ Service │  │
@@ -63,14 +62,13 @@ The solution is built on a highly scalable, serverless architecture designed for
 └───────┬────────────┬────────────┬─────────┘
         │            │            │
 ┌───────▼────────────▼────────────▼─────────┐
-│              GOOGLE CLOUD PLATFORM          │
-│  • Gemini 2.5 Flash API                     │
-│  • Firebase Firestore                       │
-│  • Firebase Storage                         │
-│  • Firebase Cloud Functions                 │
-│  • Firebase Hosting                         │
-└─────────────────────────────────────────────┘
-```&lt;/code&gt;&lt;/pre&gt;
+│              GOOGLE CLOUD PLATFORM        │
+│  • Gemini 2.5 Flash API                   │
+│  • Firebase Firestore                     │
+│  • Firebase Storage                       │
+│  • Firebase Cloud Functions               │
+│  • Firebase Hosting                       │
+└───────────────────────────────────────────┘
 
 ---
 
