@@ -36,41 +36,41 @@ The solution is built on a highly scalable, serverless architecture designed for
 
 ![Technical Architecture](Technical_Architecture_ABA.png)
 
-```
+&lt;pre&gt;&lt;code&gt;```text
 ┌─────────────────────────────────────────────────────┐
-│                    USER INTERFACE                    │
-│              Flutter Web Application                 │
+│                     USER INTERFACE                  │
+│                Flutter Web Application              │
 └────────────────────┬────────────────────────────────┘
                      │
 ┌────────────────────▼────────────────────────────────┐
-│              STATE MANAGEMENT                        │
-│         Provider (ChangeNotifier Pattern)            │
+│                   STATE MANAGEMENT                  │
+│          Provider (ChangeNotifier Pattern)          │
 └────────────────────┬────────────────────────────────┘
                      │
         ┌────────────┼────────────┐
         │            │            │
-┌───────▼──────┐ ┌──▼──────┐ ┌──▼─────────┐
-│  Analysis    │ │Community│ │ Education  │
-│  Repository  │ │Repository│ │ Repository │
-└───────┬──────┘ └──┬──────┘ └──┬─────────┘
-        │           │            │
-┌───────▼───────────▼────────────▼──────────┐
-│            SERVICES LAYER                  │
-│  ┌──────────┐  ┌──────────┐  ┌─────────┐ │
-│  │ Gemini   │  │Firestore │  │ Podcast │ │
-│  │ Service  │  │ Service  │  │ Service │ │
-│  └──────────┘  └──────────┘  └─────────┘ │
-└───────┬───────────┬────────────┬──────────┘
-        │           │            │
-┌───────▼───────────▼────────────▼──────────┐
-│         GOOGLE CLOUD PLATFORM              │
-│  • Gemini 2.5 Flash API                   │
-│  • Firebase Firestore                     │
-│  • Firebase Storage                       │
-│  • Firebase Cloud Functions               │
-│  • Firebase Hosting                       │
-└───────────────────────────────────────────┘
-```
+┌───────▼──────┐ ┌───▼──────┐ ┌───▼─────────┐
+│   Analysis   │ │Community │ │ Education   │
+│  Repository  │ │Repository│ │ Repository  │
+└───────┬──────┘ └───┬──────┘ └───┬─────────┘
+        │            │            │
+┌───────▼────────────▼────────────▼─────────┐
+│                   SERVICES LAYER            │
+│  ┌──────────┐  ┌──────────┐  ┌─────────┐  │
+│  │  Gemini  │  │Firestore │  │ Podcast │  │
+│  │ Service  │  │ Service  │  │ Service │  │
+│  └──────────┘  └──────────┘  └─────────┘  │
+└───────┬────────────┬────────────┬─────────┘
+        │            │            │
+┌───────▼────────────▼────────────▼─────────┐
+│              GOOGLE CLOUD PLATFORM          │
+│  • Gemini 2.5 Flash API                     │
+│  • Firebase Firestore                       │
+│  • Firebase Storage                         │
+│  • Firebase Cloud Functions                 │
+│  • Firebase Hosting                         │
+└─────────────────────────────────────────────┘
+```&lt;/code&gt;&lt;/pre&gt;
 
 ---
 
@@ -100,18 +100,14 @@ I implemented three primary sequential data flows to maximize user protection an
 ---
 
 ## 🚧 Challenges Faced 
-**One of The Technical Problem: The "Silent" AI Podcast**
-Our Text-to-Speech (TTS) audio for the community feed refused to play in any web browser, throwing a cryptic `DEMUXER_ERROR` and total silence, despite loading the correct track duration.
 
-**The Debugging & Solution: AI-Assisted Binary Header Injection**
-After standard MIME-type tweaks failed, a binary inspection revealed the AI API was returning "raw" sound waves (PCM data). Browsers require audio to be packaged in a `.wav` container starting with a specific 44-byte header. Essentially, the AI was sending the letter, but forgot the envelope. 
-To keep the web app lean, I avoided importing heavy third-party transcoding libraries. Instead, I directed my AI coding assistant to rapidly generate the precise Dart hex-code boilerplate. Injecting this 44-byte "RIFF WAVE" header directly into the raw stream instantly transformed the unreadable data into a flawlessly playable WAV file.
+**Challenge 1: The "Silent" AI Podcast (Deep Tech Debugging)**
+* **The Problem:** Our Text-to-Speech (TTS) audio for the community feed refused to play in any web browser, throwing a cryptic `DEMUXER_ERROR` and total silence, despite loading the correct track duration.
+* **The Debugging & Solution:** After standard MIME-type tweaks failed, a binary inspection revealed the AI API was returning "raw" sound waves (PCM data). Browsers require audio to be packaged in a `.wav` container starting with a specific 44-byte header. Essentially, the AI was sending the letter, but forgot the envelope. To keep the web app lean, I avoided importing heavy third-party transcoding libraries. Instead, I directed my AI coding assistant to rapidly generate the precise Dart hex-code boilerplate. Injecting this 44-byte "RIFF WAVE" header directly into the raw stream instantly transformed the unreadable data into a flawlessly playable WAV file.
 
-**The Development Problem: The Solo Full-Stack Bottleneck**
-This is my first full-stack project. Building a comprehensive, multi-layered architecture—spanning a Flutter frontend, Firebase serverless backend, and multiple Google API integrations—as a solo developer within a strict hackathon timeframe was incredibly daunting. It required rapid context-switching and a steep learning curve for specific AI behaviors.
-
-**The Solution: Rapid Learning & Execution**
-I enforced a strict Layered MVVM architecture from day one to prevent spaghetti code, ensuring business logic remained decoupled from the UI. Furthermore, I strategically treated AI (like Cursor and Gemini) not just as feature components, but as my "pair programmers," using them to accelerate boilerplate generation and navigate unfamiliar framework documentation, allowing one person to deliver a production-ready MVP.
+**Challenge 2: The Solo Full-Stack Bottleneck (Rapid Learning & Execution)**
+* **The Problem:** This is my first full-stack project. Building a comprehensive, multi-layered architecture—spanning a Flutter frontend, Firebase serverless backend, and multiple Google API integrations—as a solo developer within a strict hackathon timeframe was incredibly daunting. It required rapid context-switching and a steep learning curve for specific AI behaviors.
+* **The Solution:** I enforced a strict Layered MVVM architecture from day one to prevent spaghetti code, ensuring business logic remained decoupled from the UI. Furthermore, I strategically treated AI (like Cursor and Gemini) not just as feature components, but as my "pair programmers," using them to accelerate boilerplate generation and navigate unfamiliar framework documentation, allowing one person to deliver a production-ready MVP.
 
 ---
 
