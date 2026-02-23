@@ -1,10 +1,16 @@
-# AskBeforeAct (ABA)
-## AI-Powered Fraud Detection Web Application
+<div align="center">
 
-![Status](https://img.shields.io/badge/status-in%20development-yellow)
-![Firebase](https://img.shields.io/badge/backend-Firebase-orange)
-![Flutter](https://img.shields.io/badge/frontend-Flutter%20Web-blue)
-![AI](https://img.shields.io/badge/AI-Gemini%201.5%20Flash-green)
+# 🛡️ AskBeforeAct (ABA)
+**AI-Powered Fraud Detection & Digital Literacy Platform**
+
+[![Status](https://img.shields.io/badge/status-MVP_Ready-success?style=for-the-badge)](https://github.com/)
+[![Flutter](https://img.shields.io/badge/Frontend-Flutter_Web-02569B?style=for-the-badge&logo=flutter)](https://flutter.dev/)
+[![Firebase](https://img.shields.io/badge/Backend-Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com/)
+[![AI](https://img.shields.io/badge/AI-Gemini_2.5_Flash-8E75B2?style=for-the-badge&logo=google-gemini)](https://ai.google.dev/)
+
+*Protecting vulnerable populations from digital fraud through real-time AI analysis, accessible community alerts, and dynamic digital literacy.*
+
+</div>
 
 ---
 
@@ -24,74 +30,53 @@ AskBeforeAct is an AI-powered web application that helps users detect online fra
 
 ---
 
-## 🚀 Project Status
+## 🏗️ Technical Architecture
 
-**Current Phase:** Backend Setup  
-**Project ID:** `askbeforeact-f5326`  
-**Target Launch:** February 2026
+The solution is built on a highly scalable, serverless architecture designed for rapid real-time processing and seamless AI integration, utilizing a **Layered MVVM with Repository Pattern**.
 
-### ✅ Completed
-- [x] Product requirements document (PRD)
-- [x] Technical architecture design
-- [x] Backend structure documentation
-- [x] Firebase project created
-- [x] Security rules defined
-- [x] Setup documentation prepared
-- [x] Firebase services configuration
-- [x] Flutter app development (MVP)
-- [x] Gemini AI integration
-- [x] Community platform with podcasts
-- [x] Learn section with Firebase integration
-- [x] Real-time scam news fetching
-- [x] Cloud Functions for automated news updates
+![Technical Architecture](Technical Architecture ABA.png)
 
-### 🔄 In Progress
-- [ ] UI/UX refinement
-- [ ] Testing and QA
-- [ ] Performance optimization
-
-### 📅 Upcoming
-- [ ] Deployment to Firebase Hosting
-- [ ] Beta launch
-- [ ] User feedback collection
-
----
-
-## 📚 Documentation
-
-### Getting Started
-- **[FIREBASE_QUICK_START.md](FIREBASE_QUICK_START.md)** - Quick setup checklist (45 min)
-- **[FIREBASE_SETUP_GUIDE.md](FIREBASE_SETUP_GUIDE.md)** - Detailed setup instructions
-- **[FIREBASE_SETUP_SUMMARY.md](FIREBASE_SETUP_SUMMARY.md)** - Overview and reference
-- **[FIREBASE_SETUP_FLOWCHART.md](FIREBASE_SETUP_FLOWCHART.md)** - Visual setup guide
-
-### Learn Section Integration
-- **[LEARN_SECTION_QUICK_START.md](LEARN_SECTION_QUICK_START.md)** - 5-minute setup guide
-- **[LEARN_SECTION_INTEGRATION.md](LEARN_SECTION_INTEGRATION.md)** - Complete integration guide
-- **[LEARN_SECTION_ARCHITECTURE.md](LEARN_SECTION_ARCHITECTURE.md)** - Architecture diagrams
-- **[LEARN_SECTION_SUMMARY.md](LEARN_SECTION_SUMMARY.md)** - Feature summary
-- **[LEARN_SECTION_CHECKLIST.md](LEARN_SECTION_CHECKLIST.md)** - Deployment checklist
-- **[functions/README.md](functions/README.md)** - Cloud Functions documentation
-
-### AI Chatbot
-- **[CHATBOT_FEATURE.md](CHATBOT_FEATURE.md)** - Complete chatbot guide
-- **[CHATBOT_QUICK_REFERENCE.md](CHATBOT_QUICK_REFERENCE.md)** - Quick reference
-- **[CHATBOT_IMPLEMENTATION_SUMMARY.md](CHATBOT_IMPLEMENTATION_SUMMARY.md)** - Implementation details
-
-### Architecture & Design
-- **[01_PRD_MVP.md](01_PRD_MVP.md)** - Product requirements (MVP scope)
-- **[03_TECH_STACK.md](03_TECH_STACK.md)** - Technology stack details
-- **[05_BACKEND_STRUCTURE.md](05_BACKEND_STRUCTURE.md)** - Backend architecture & code
-
-### Configuration Files
-- **[firestore.rules](firestore.rules)** - Firestore security rules
-- **[storage.rules](storage.rules)** - Storage security rules
-- **[firestore.indexes.json](firestore.indexes.json)** - Database indexes
-- **[firebase.json](firebase.json)** - Firebase configuration
+```
+┌─────────────────────────────────────────────────────┐
+│                    USER INTERFACE                    │
+│              Flutter Web Application                 │
+└────────────────────┬────────────────────────────────┘
+                     │
+┌────────────────────▼────────────────────────────────┐
+│              STATE MANAGEMENT                        │
+│         Provider (ChangeNotifier Pattern)            │
+└────────────────────┬────────────────────────────────┘
+                     │
+        ┌────────────┼────────────┐
+        │            │            │
+┌───────▼──────┐ ┌──▼──────┐ ┌──▼─────────┐
+│  Analysis    │ │Community│ │ Education  │
+│  Repository  │ │Repository│ │ Repository │
+└───────┬──────┘ └──┬──────┘ └──┬─────────┘
+        │           │            │
+┌───────▼───────────▼────────────▼──────────┐
+│            SERVICES LAYER                  │
+│  ┌──────────┐  ┌──────────┐  ┌─────────┐ │
+│  │ Gemini   │  │Firestore │  │ Podcast │ │
+│  │ Service  │  │ Service  │  │ Service │ │
+│  └──────────┘  └──────────┘  └─────────┘ │
+└───────┬───────────┬────────────┬──────────┘
+        │           │            │
+┌───────▼───────────▼────────────▼──────────┐
+│         GOOGLE CLOUD PLATFORM              │
+│  • Gemini 2.5 Flash API                   │
+│  • Firebase Firestore                     │
+│  • Firebase Storage                       │
+│  • Firebase Cloud Functions               │
+│  • Firebase Hosting                       │
+└───────────────────────────────────────────┘
+```
 
 ---
 
-## 🛠️ Tech Stack
+## 🛠️ Implementation Details
+
+![Tech Stack](Tech Stack ABA.png)
 
 | Layer | Technology | Purpose |
 |-------|-----------|---------|
@@ -99,37 +84,40 @@ AskBeforeAct is an AI-powered web application that helps users detect online fra
 | **Backend** | Firebase | Serverless backend (Auth, DB, Storage) |
 | **Database** | Cloud Firestore | NoSQL document database |
 | **Storage** | Firebase Storage | Image/file hosting |
-| **AI** | Gemini 1.5 Flash | Fraud detection & content generation |
+| **AI** | Gemini 2.5 Flash | Fraud detection & content generation |
 | **Cloud Functions** | Firebase Functions | Automated news fetching & processing |
 | **Hosting** | Firebase Hosting | Web hosting & deployment |
 | **State Management** | Provider | Flutter state management |
 
 **Total Cost:** $0/month (free tiers)
 
+I implemented three primary sequential data flows to maximize user protection and engagement:
+
+1. **Fraud Analysis & Evidence Generation:** Users upload a suspicious screenshot, text, or URL. The payload routes via Cloud Functions to **Gemini 2.5 Flash** for multilingual OCR (English/Chinese/Malay) and intent analysis. The UI instantly displays a Red/Green threat indicator, and generates a downloadable PDF official report via Firebase Storage.
+2. **AI Podcast Community Feed:** To reduce reading friction for the elderly, community scam alerts are fetched from Firestore, summarized by Gemini, and converted into an AI Audio Podcast (filterable by today/week/month).
+3. **Dynamic Learning & Q&A Chatbot:** Instead of static articles, we use the **Google News API** to fetch real-time trending scams. This feeds into a Gemini-powered Chatbot, providing an interactive Q&A experience on the latest threats.
+
 ---
 
-## 🏗️ Architecture
+## 📈 Future Roadmap
 
-```
-┌─────────────────────────────────────────────┐
-│          Flutter Web App (Client)           │
-│  ┌─────────────┐  ┌─────────────┐          │
-│  │  Services   │  │ Repositories│          │
-│  └─────────────┘  └─────────────┘          │
-└─────────────────────────────────────────────┘
-                    ↕
-┌─────────────────────────────────────────────┐
-│            Firebase Backend                 │
-│  ┌──────────┐ ┌──────────┐ ┌──────────┐   │
-│  │   Auth   │ │ Firestore│ │ Storage  │   │
-│  └──────────┘ └──────────┘ └──────────┘   │
-└─────────────────────────────────────────────┘
-                    ↕
-┌─────────────────────────────────────────────┐
-│          External Services                  │
-│           Gemini AI API                     │
-└─────────────────────────────────────────────┘
-```
+### Version 1.1 (Month 2)
+- [ ] Comments on community posts
+- [ ] PDF report downloads
+- [ ] Share analysis results
+- [ ] User profile pages
+
+### Version 1.2 (Month 3)
+- [ ] Official fraud alerts integration
+- [ ] Email notifications
+- [ ] Advanced analytics dashboard
+- [ ] Export analysis history
+
+### Version 2.0 (Month 4-6)
+- [ ] Mobile apps (iOS/Android)
+- [ ] Browser extension
+- [ ] Premium tier ($4.99/month)
+- [ ] API access for developers
 
 ---
 
@@ -393,36 +381,6 @@ If you exceed free tiers:
 
 ---
 
-## 📈 Roadmap
-
-### MVP (Week 1-2)
-- [x] Backend setup
-- [ ] Authentication implementation
-- [ ] Core fraud detection
-- [ ] Basic UI
-- [ ] Community platform
-- [ ] Education hub
-
-### Version 1.1 (Month 2)
-- [ ] Comments on community posts
-- [ ] PDF report downloads
-- [ ] Share analysis results
-- [ ] User profile pages
-
-### Version 1.2 (Month 3)
-- [ ] Official fraud alerts integration
-- [ ] Email notifications
-- [ ] Advanced analytics dashboard
-- [ ] Export analysis history
-
-### Version 2.0 (Month 4-6)
-- [ ] Mobile apps (iOS/Android)
-- [ ] Browser extension
-- [ ] Premium tier ($4.99/month)
-- [ ] API access for developers
-
----
-
 ## 🤝 Contributing
 
 This is currently a solo project, but contributions are welcome once the MVP is launched.
@@ -452,10 +410,9 @@ This is currently a solo project, but contributions are welcome once the MVP is 
 
 ## 🙏 Acknowledgments
 
-- **Firebase** - Serverless backend platform
+- **Firebase** - Serverless backend platform and web hosting
 - **Google Gemini** - AI-powered fraud detection
 - **Flutter** - Cross-platform UI framework
-- **Vercel** - Web hosting
 
 ---
 
@@ -490,6 +447,40 @@ AskBeforeAct-ABA-/
 
 ---
 
+## 📚 Documentation
+
+### Getting Started
+- **[FIREBASE_QUICK_START.md](FIREBASE_QUICK_START.md)** - Quick setup checklist (45 min)
+- **[FIREBASE_SETUP_GUIDE.md](FIREBASE_SETUP_GUIDE.md)** - Detailed setup instructions
+- **[FIREBASE_SETUP_SUMMARY.md](FIREBASE_SETUP_SUMMARY.md)** - Overview and reference
+- **[FIREBASE_SETUP_FLOWCHART.md](FIREBASE_SETUP_FLOWCHART.md)** - Visual setup guide
+
+### Learn Section Integration
+- **[LEARN_SECTION_QUICK_START.md](LEARN_SECTION_QUICK_START.md)** - 5-minute setup guide
+- **[LEARN_SECTION_INTEGRATION.md](LEARN_SECTION_INTEGRATION.md)** - Complete integration guide
+- **[LEARN_SECTION_ARCHITECTURE.md](LEARN_SECTION_ARCHITECTURE.md)** - Architecture diagrams
+- **[LEARN_SECTION_SUMMARY.md](LEARN_SECTION_SUMMARY.md)** - Feature summary
+- **[LEARN_SECTION_CHECKLIST.md](LEARN_SECTION_CHECKLIST.md)** - Deployment checklist
+- **[functions/README.md](functions/README.md)** - Cloud Functions documentation
+
+### AI Chatbot
+- **[CHATBOT_FEATURE.md](CHATBOT_FEATURE.md)** - Complete chatbot guide
+- **[CHATBOT_QUICK_REFERENCE.md](CHATBOT_QUICK_REFERENCE.md)** - Quick reference
+- **[CHATBOT_IMPLEMENTATION_SUMMARY.md](CHATBOT_IMPLEMENTATION_SUMMARY.md)** - Implementation details
+
+### Architecture & Design
+- **[01_PRD_MVP.md](01_PRD_MVP.md)** - Product requirements (MVP scope)
+- **[03_TECH_STACK.md](03_TECH_STACK.md)** - Technology stack details
+- **[05_BACKEND_STRUCTURE.md](05_BACKEND_STRUCTURE.md)** - Backend architecture & code
+
+### Configuration Files
+- **[firestore.rules](firestore.rules)** - Firestore security rules
+- **[storage.rules](storage.rules)** - Storage security rules
+- **[firestore.indexes.json](firestore.indexes.json)** - Database indexes
+- **[firebase.json](firebase.json)** - Firebase configuration
+
+---
+
 ## 🎯 Success Metrics
 
 ### Week 1 Post-Launch
@@ -506,8 +497,8 @@ AskBeforeAct-ABA-/
 
 ---
 
-**Project Status:** 🔄 In Development  
-**Last Updated:** February 14, 2026  
+**Project Status:** 🚀 MVP Deployed & Tested
+**Last Updated:** February 13, 2026  
 **Version:** 1.0.0-alpha
 
 ---
