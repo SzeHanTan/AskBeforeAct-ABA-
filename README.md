@@ -34,7 +34,7 @@ AskBeforeAct is an AI-powered web application that helps users detect online fra
 
 The solution is built on a highly scalable, serverless architecture designed for rapid real-time processing and seamless AI integration, utilizing a **Layered MVVM with Repository Pattern**.
 
-![Technical Architecture](Technical Architecture ABA.png)
+![Technical Architecture](Technical_Architecture_ABA.png)
 
 ```
 ┌─────────────────────────────────────────────────────┐
@@ -76,7 +76,7 @@ The solution is built on a highly scalable, serverless architecture designed for
 
 ## 🛠️ Implementation Details
 
-![Tech Stack](Tech Stack ABA.png)
+![Tech Stack](Tech_Stack_ABA.png)
 
 | Layer | Technology | Purpose |
 |-------|-----------|---------|
@@ -96,6 +96,22 @@ I implemented three primary sequential data flows to maximize user protection an
 1. **Fraud Analysis & Evidence Generation:** Users upload a suspicious screenshot, text, or URL. The payload routes via Cloud Functions to **Gemini 2.5 Flash** for multilingual OCR (English/Chinese/Malay) and intent analysis. The UI instantly displays a Red/Green threat indicator, and generates a downloadable PDF official report via Firebase Storage.
 2. **AI Podcast Community Feed:** To reduce reading friction for the elderly, community scam alerts are fetched from Firestore, summarized by Gemini, and converted into an AI Audio Podcast (filterable by today/week/month).
 3. **Dynamic Learning & Q&A Chatbot:** Instead of static articles, we use the **Google News API** to fetch real-time trending scams. This feeds into a Gemini-powered Chatbot, providing an interactive Q&A experience on the latest threats.
+
+---
+
+## 🚧 Challenges Faced 
+**One of The Technical Problem: The "Silent" AI Podcast**
+Our Text-to-Speech (TTS) audio for the community feed refused to play in any web browser, throwing a cryptic `DEMUXER_ERROR` and total silence, despite loading the correct track duration.
+
+**The Debugging & Solution: AI-Assisted Binary Header Injection**
+After standard MIME-type tweaks failed, a binary inspection revealed the AI API was returning "raw" sound waves (PCM data). Browsers require audio to be packaged in a `.wav` container starting with a specific 44-byte header. Essentially, the AI was sending the letter, but forgot the envelope. 
+To keep the web app lean, I avoided importing heavy third-party transcoding libraries. Instead, I directed my AI coding assistant to rapidly generate the precise Dart hex-code boilerplate. Injecting this 44-byte "RIFF WAVE" header directly into the raw stream instantly transformed the unreadable data into a flawlessly playable WAV file.
+
+**The Development Problem: The Solo Full-Stack Bottleneck**
+This is my first full-stack project. Building a comprehensive, multi-layered architecture—spanning a Flutter frontend, Firebase serverless backend, and multiple Google API integrations—as a solo developer within a strict hackathon timeframe was incredibly daunting. It required rapid context-switching and a steep learning curve for specific AI behaviors.
+
+**The Solution: Rapid Learning & Execution**
+I enforced a strict Layered MVVM architecture from day one to prevent spaghetti code, ensuring business logic remained decoupled from the UI. Furthermore, I strategically treated AI (like Cursor and Gemini) not just as feature components, but as my "pair programmers," using them to accelerate boilerplate generation and navigate unfamiliar framework documentation, allowing one person to deliver a production-ready MVP.
 
 ---
 
