@@ -16,16 +16,15 @@
 
 ## 📖 Overview
 
-AskBeforeAct is an AI-powered web application that helps users detect online fraud by analyzing screenshots, text messages, and URLs. Using Google's Gemini 1.5 Flash AI, it provides instant risk assessment with actionable recommendations.
+AskBeforeAct is an AI-powered web application that helps users detect online fraud by analyzing screenshots, text messages, and URLs. Using Google's Gemini 2.5 Flash AI, it provides instant risk assessment with actionable recommendations.
 
 **Key Features:**
 - 🔍 Multi-format fraud detection (screenshots, text, URLs)
 - 🤖 AI-powered analysis with risk scoring
-- 📊 Analysis history tracking
 - 👥 Community platform for sharing experiences
 - 📚 Educational resources on common scams
 - 📰 Real-time scam news from Google News RSS
-- 💬 AI chatbot for Q&A and news summarization
+- 💬 AI chatbot for news summarization and Q&A
 - 🎙️ AI-generated educational podcasts
 
 ---
@@ -36,6 +35,7 @@ The solution is built on a highly scalable, serverless architecture designed for
 
 ![Technical Architecture](Technical_Architecture_ABA.png)
 
+```text
 ┌─────────────────────────────────────────────────────┐
 │                     USER INTERFACE                  │
 │                Flutter Web Application              │
@@ -69,6 +69,7 @@ The solution is built on a highly scalable, serverless architecture designed for
 │  • Firebase Cloud Functions               │
 │  • Firebase Hosting                       │
 └───────────────────────────────────────────┘
+```
 
 ---
 
@@ -359,7 +360,7 @@ For detailed instructions, see **[LEARN_SECTION_QUICK_START.md](LEARN_SECTION_QU
 | **Firestore** | 50K reads, 20K writes/day | ~5K reads, 3K writes/day | ✅ Free |
 | **Firebase Storage** | 5GB, 1GB/day transfer | ~500MB, 100MB/day | ✅ Free |
 | **Cloud Functions** | 2M invocations/month | ~120/month (scheduled) | ✅ Free |
-| **Gemini 1.5 Flash** | 15 RPM, 1M tokens/min | ~500 requests/day | ✅ Free |
+| **Gemini 2.5 Flash** | 10 RPM, 250K tokens/min | ~500 requests/day | ✅ Free |
 
 **Total Monthly Cost:** $0
 
@@ -378,7 +379,6 @@ If you exceed free tiers:
 - [ ] Screenshot upload and analysis
 - [ ] Text analysis
 - [ ] URL analysis
-- [ ] Analysis history display
 - [ ] Community post creation
 - [ ] Voting on posts
 - [ ] Education content access
@@ -401,12 +401,6 @@ This is currently a solo project, but contributions are welcome once the MVP is 
 3. Make your changes
 4. Test thoroughly
 5. Submit a pull request
-
----
-
-## 📄 License
-
-[License information to be added]
 
 ---
 
@@ -468,9 +462,6 @@ AskBeforeAct-ABA-/
 ### Learn Section Integration
 - **[LEARN_SECTION_QUICK_START.md](LEARN_SECTION_QUICK_START.md)** - 5-minute setup guide
 - **[LEARN_SECTION_INTEGRATION.md](LEARN_SECTION_INTEGRATION.md)** - Complete integration guide
-- **[LEARN_SECTION_ARCHITECTURE.md](LEARN_SECTION_ARCHITECTURE.md)** - Architecture diagrams
-- **[LEARN_SECTION_SUMMARY.md](LEARN_SECTION_SUMMARY.md)** - Feature summary
-- **[LEARN_SECTION_CHECKLIST.md](LEARN_SECTION_CHECKLIST.md)** - Deployment checklist
 - **[functions/README.md](functions/README.md)** - Cloud Functions documentation
 
 ### AI Chatbot
@@ -493,17 +484,9 @@ AskBeforeAct-ABA-/
 
 ## 🎯 Success Metrics
 
-### Week 1 Post-Launch
-- 50+ registered users
-- 200+ analyses performed
-- 10+ community posts
-- <5 second average analysis time
-
-### Month 1 Post-Launch
-- 500+ registered users
-- 2,000+ analyses performed
-- 50+ community posts
-- 85%+ user satisfaction
+### MVP launch
+- <20 seconds analysis time
+- 85% user satisfaction
 
 ---
 
